@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AshaCompanionDashboard from './components/AshaCompanionDashboard';
 import MyRoutePage from './components/pages/MyRoutePage';
 import PatientsPage from './components/pages/PatientsPage';
+import AddPatientPage from './components/pages/AddPatientPage';
 import ReportsPage from './components/pages/ReportsPage';
 import MessagesPage from './components/pages/MessagesPage';
 import TrainingPage from './components/pages/TrainingPage';
@@ -231,18 +232,25 @@ export default function App() {
               onStatusChange={handleStatusChange}
               onExplainRisk={(pid) => openRightDrawer(pid)}
               onTriggerEmergency={() => setIsEmergencyOpen(true)}
-              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onRegisterNewPatient={() => setActiveTab('add_patient')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
             />
           ) : activeTab === 'patients' ? (
-            /* PATIENTS PAGE (Exact Replica of User Mockup) */
             <PatientsPage
               patients={patients}
               currentUser={currentUser}
               onUpdatePatient={handleUpdatePatient}
               onSelectPatient={(p) => openRightDrawer(p.patient_id)}
-              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onRegisterNewPatient={() => setActiveTab('add_patient')}
               onBatchImport={handleBatchImport}
+              onTriggerEmergency={() => setIsEmergencyOpen(true)}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+            />
+          ) : activeTab === 'add_patient' ? (
+            /* ADD PATIENT PAGE (Exact Replica of User Mockup) */
+            <AddPatientPage
+              currentUser={currentUser}
+              onRegisterNewPatient={handleRegisterNewPatient}
               onTriggerEmergency={() => setIsEmergencyOpen(true)}
               onNavigateToTab={(tab) => setActiveTab(tab)}
             />
@@ -251,35 +259,35 @@ export default function App() {
               currentUser={currentUser}
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setIsEmergencyOpen(true)}
-              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onRegisterNewPatient={() => setActiveTab('add_patient')}
             />
           ) : activeTab === 'messages' ? (
             <MessagesPage
               currentUser={currentUser}
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setIsEmergencyOpen(true)}
-              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onRegisterNewPatient={() => setActiveTab('add_patient')}
             />
           ) : activeTab === 'training' ? (
             <TrainingPage
               currentUser={currentUser}
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setIsEmergencyOpen(true)}
-              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onRegisterNewPatient={() => setActiveTab('add_patient')}
             />
           ) : activeTab === 'resources' ? (
             <ResourcesPage
               currentUser={currentUser}
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setIsEmergencyOpen(true)}
-              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onRegisterNewPatient={() => setActiveTab('add_patient')}
             />
           ) : activeTab === 'settings' ? (
             <SettingsPage
               currentUser={currentUser}
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setIsEmergencyOpen(true)}
-              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onRegisterNewPatient={() => setActiveTab('add_patient')}
             />
           ) : (
             <AshaCompanionDashboard
@@ -289,7 +297,7 @@ export default function App() {
               onStatusChange={handleStatusChange}
               onExplainRisk={(pid) => openRightDrawer(pid)}
               onTriggerEmergency={() => setIsEmergencyOpen(true)}
-              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onRegisterNewPatient={() => setActiveTab('add_patient')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
             />
           )
@@ -348,10 +356,11 @@ export default function App() {
             <CommandItem onSelect={() => { setActiveTab('dashboard'); setIsCommandOpen(false); }}>Dashboard</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('route'); setIsCommandOpen(false); }}>My Route</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('patients'); setIsCommandOpen(false); }}>Patient Directory</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('add_patient'); setIsCommandOpen(false); }}>Add Patient</CommandItem>
           </CommandGroup>
           <CommandGroup heading="Actions">
             <CommandItem onSelect={() => { setIsEmergencyOpen(true); setIsCommandOpen(false); }}>🚨 Emergency Trigger</CommandItem>
-            <CommandItem onSelect={() => { setIsRegisterOpen(true); setIsCommandOpen(false); }}>Register New Patient</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('add_patient'); setIsCommandOpen(false); }}>Register New Patient</CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>
