@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import WorkerDashboard from './components/WorkerDashboard';
+import AshaCompanionDashboard from './components/AshaCompanionDashboard';
 import EmergencyModal from './components/EmergencyModal';
 import AIExplanationModal from './components/AIExplanationModal';
 import SupervisorDashboard from './components/SupervisorDashboard';
@@ -12,14 +11,11 @@ import PhoneOTPLogin from './components/PhoneOTPLogin';
 import { MOCK_WORKER, MOCK_ROUTE_STOPS, MOCK_PATIENTS } from './services/mockData';
 
 // Custom UI Components
-import { Breadcrumb, BreadcrumbItem, BreadcrumbSeparator } from './components/ui/breadcrumb';
 import { Drawer, DrawerHeader, DrawerTitle, DrawerDescription, DrawerContent, DrawerFooter, DrawerClose } from './components/ui/drawer';
 import { CommandDialog, CommandInput, CommandList, CommandGroup, CommandItem, CommandEmpty } from './components/ui/command';
-import { Pagination } from './components/ui/pagination';
-import { Sidebar } from './components/ui/sidebar';
 import RiskBadge from './components/RiskBadge';
 
-import { MapPin, Navigation, Clock, CheckCircle2, AlertOctagon, UserCheck, Search, Sparkles, Home } from 'lucide-react';
+import { CheckCircle2, AlertOctagon, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -30,14 +26,10 @@ export default function App() {
   const [activeRole, setActiveRole] = useState(() => currentUser?.role || 'asha_worker');
   const [activeTab, setActiveTab] = useState('route');
 
-  const [currentLanguage, setCurrentLanguage] = useState('EN');
-  const [isOfflineMode, setIsOfflineMode] = useState(false);
-
   const [patients, setPatients] = useState(MOCK_PATIENTS);
   const [stops, setStops] = useState(MOCK_ROUTE_STOPS);
 
   // UI Drawer & Modal States
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerPatient, setDrawerPatient] = useState(null);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
@@ -73,37 +65,11 @@ export default function App() {
     setTimeout(() => setNotification(null), 4000);
   };
 
-  const handleLanguageChange = (lang) => {
-    setCurrentLanguage(lang);
-    const langNames = { EN: 'English', TE: 'తెలుగు (Telugu)', HI: 'हिंदी (Hindi)' };
-    showToast(`App UI language changed to ${langNames[lang]}`, 'success');
-  };
-
-  const handleToggleOfflineMode = () => {
-    setIsOfflineMode(prev => {
-      const nextState = !prev;
-      showToast(
-        nextState
-          ? '⚡ Rural Offline Mode Active: Visit logs cached locally in LocalStorage'
-          : '📶 Cloud Sync Restored: Synchronized 2 offline visits with backend API',
-        nextState ? 'info' : 'success'
-      );
-      return nextState;
-    });
-  };
-
   const handleLoginSuccess = (userProfile) => {
     setCurrentUser(userProfile);
     setActiveRole(userProfile.role);
     setActiveTab(userProfile.role === 'asha_worker' ? 'route' : 'supervisor');
-    showToast(`Welcome ${userProfile.name}! Entered ${userProfile.role === 'asha_worker' ? 'ASHA Worker Portal' : 'PHC Supervisor Command Center'}.`, 'success');
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('asha_jwt_token');
-    localStorage.removeItem('asha_user_profile');
-    setCurrentUser(null);
-    showToast('Session logged out successfully', 'info');
+    showToast(`Welcome ${userProfile.name}! Entered ${userProfile.role === 'asha_worker' ? 'ASHA Companion Portal' : 'PHC Supervisor Command Center'}.`, 'success');
   };
 
   const handleStatusChange = (stopId, newStatus) => {
@@ -232,111 +198,41 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff] text-[#0b1c30] flex flex-col font-sans">
-      {/* Toast Banner */}
+    <div className="min-h-screen bg-[#f8f9fe] text-slate-900 flex flex-col font-sans">
+      {/* Toast Notification Banner */}
       {notification && (
-        <div className={`fixed top-16 right-4 z-50 px-4 py-2.5 rounded-2xl shadow-2xl border text-xs font-semibold flex items-center gap-2 animate-bounce ${
+        <div className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-2xl shadow-2xl border text-xs font-semibold flex items-center gap-2 animate-bounce ${
           notification.type === 'emergency'
             ? 'bg-red-600 text-white border-red-400 shadow-red-900/50'
             : notification.type === 'success'
             ? 'bg-emerald-600 text-white border-emerald-400'
-            : 'bg-indigo-600 text-white border-indigo-400'
+            : 'bg-purple-600 text-white border-purple-400'
         }`}>
           {notification.type === 'emergency' ? <AlertOctagon className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
           {notification.msg}
         </div>
       )}
 
-      {/* Dedicated Portal Header */}
-      <Navbar
-        activeRole={activeRole}
-        activeTab={activeTab}
-        onSelectTab={setActiveTab}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-        onTriggerEmergency={() => setIsEmergencyOpen(true)}
-        onOpenSidebar={() => setIsSidebarOpen(true)}
-        currentLanguage={currentLanguage}
-        onLanguageChange={handleLanguageChange}
-        isOfflineMode={isOfflineMode}
-        onToggleOfflineMode={handleToggleOfflineMode}
-      />
-
-      {/* Sub-Header Breadcrumb & Command Bar */}
-      <div className="bg-white/80 border-b border-slate-200/80 px-4 py-2">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs">
-          <Breadcrumb>
-            <BreadcrumbItem><Home className="w-3.5 h-3.5 text-slate-500" /> Home</BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>PHC Ramanthapur</BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem isCurrent>
-              {activeRole === 'supervisor' ? 'Supervisor Command Center' : (activeTab === 'route' ? "Active Dispatch" : "Patient Directory")}
-            </BreadcrumbItem>
-          </Breadcrumb>
-
-          <button
-            onClick={() => setIsCommandOpen(true)}
-            className="flex items-center gap-2 px-3 py-1 bg-white rounded-xl border border-slate-200 text-[11px] text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-colors shadow-xs"
-          >
-            <Search className="w-3 h-3 text-indigo-600" />
-            <span>Search Command Palette...</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-300 font-mono text-[9px]">Ctrl+K</kbd>
-          </button>
-        </div>
-      </div>
-
-      {/* Main View Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
+      {/* Main Role View Container */}
+      <main className="flex-1 flex flex-col">
         {activeRole === 'asha_worker' ? (
-          /* ASHA FIELD WORKER DEDICATED PORTAL */
-          activeTab === 'route' ? (
-            <WorkerDashboard
-              stops={stops}
-              workerLocation={MOCK_WORKER.current_location}
-              currentUser={currentUser}
-              currentLanguage={currentLanguage}
-              onStatusChange={handleStatusChange}
-              onExplainRisk={(pid) => openRightDrawer(pid)}
-              onTriggerEmergency={() => setIsEmergencyOpen(true)}
-              onRegisterNewPatient={() => setIsRegisterOpen(true)}
-            />
-          ) : (
-            <div className="space-y-4">
-              <PatientManagement
-                patients={patients}
-                onUpdatePatient={handleUpdatePatient}
-                onSelectPatient={(p) => openRightDrawer(p.patient_id)}
-                onRegisterNewPatient={() => setIsRegisterOpen(true)}
-                onBatchImport={handleBatchImport}
-              />
-              <Pagination currentPage={1} totalPages={3} onPageChange={(p) => showToast(`Page ${p} loaded`, 'info')} />
-            </div>
-          )
+          /* ASHA COMPANION DASHBOARD (Exact Match from User Image) */
+          <AshaCompanionDashboard
+            stops={stops}
+            workerLocation={MOCK_WORKER.current_location}
+            currentUser={currentUser}
+            onStatusChange={handleStatusChange}
+            onExplainRisk={(pid) => openRightDrawer(pid)}
+            onTriggerEmergency={() => setIsEmergencyOpen(true)}
+            onRegisterNewPatient={() => setIsRegisterOpen(true)}
+          />
         ) : (
           /* PHC SUPERVISOR DEDICATED COMMAND CENTER PORTAL */
           <SupervisorDashboard onGenerateReport={() => setIsReportOpen(true)} />
         )}
       </main>
 
-      <footer className="border-t border-slate-200 py-3 text-center text-xs text-slate-500 bg-white">
-        Idea2Impact 2026 — ASHA Route Optimizer AI • Built with React, FastAPI, OR-Tools & Gemini
-      </footer>
-
-      {/* Main Navigation Sidebar Drawer */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        activeRole={activeRole}
-        activeTab={activeTab}
-        onSelectTab={(tab) => {
-          if (activeRole === 'asha_worker') {
-            setActiveTab(tab);
-          }
-        }}
-      />
-
-      {/* Patient Clinical Details Slide-Over Drawer (Right-Side Drawer) */}
+      {/* Patient Clinical Details Slide-Over Drawer */}
       <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
         {drawerPatient && (
           <>
@@ -363,8 +259,8 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-2xl text-xs space-y-1.5 text-indigo-950">
-                <span className="font-bold flex items-center gap-1 text-indigo-800 uppercase text-[10px]"><Sparkles className="w-3.5 h-3.5" /> Gemini Priority Rationale</span>
+              <div className="p-3 bg-purple-50 border border-purple-200 rounded-2xl text-xs space-y-1.5 text-purple-950">
+                <span className="font-bold flex items-center gap-1 text-purple-800 uppercase text-[10px]"><Sparkles className="w-3.5 h-3.5" /> Gemini Priority Rationale</span>
                 <p>Prioritized due to 3rd trimester pregnancy combined with overdue ANC visit schedule. Blood pressure and fetal heart rate checkup recommended.</p>
               </div>
             </DrawerContent>
