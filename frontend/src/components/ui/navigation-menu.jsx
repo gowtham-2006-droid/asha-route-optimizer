@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Bell, ChevronDown, Activity, ShieldAlert, Sparkles, MapPin } from 'lucide-react';
+import { Bell, Navigation, Users, Activity, Sparkles, MapPin } from 'lucide-react';
 
-export function NavigationMenu({ activeTab, onSelectTab, className = '' }) {
+export function NavigationMenu({ activeRole, activeTab, onSelectTab, className = '' }) {
   const [isNotifyOpen, setIsNotifyOpen] = useState(false);
 
   const mockNotifications = [
@@ -11,33 +11,58 @@ export function NavigationMenu({ activeTab, onSelectTab, className = '' }) {
   ];
 
   return (
-    <div className={`flex items-center justify-between gap-4 w-full ${className}`}>
-      {/* Top Header Tabs */}
+    <div className={`flex items-center justify-between gap-3 w-full ${className}`}>
+      {/* Dynamic Role-Based Top Navigation Tabs */}
       <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-        <button
-          onClick={() => onSelectTab && onSelectTab('route')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === 'route' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Today's Route & Map
-        </button>
+        {activeRole === 'asha_worker' ? (
+          <>
+            <button
+              onClick={() => onSelectTab && onSelectTab('route')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === 'route' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Navigation className="w-3.5 h-3.5" /> My Route & Map
+            </button>
 
-        <button
-          onClick={() => onSelectTab && onSelectTab('patients')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === 'patients' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Patient Directory
-        </button>
+            <button
+              onClick={() => onSelectTab && onSelectTab('patients')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === 'patients' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" /> Patient Directory
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => onSelectTab && onSelectTab('supervisor_tracking')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === 'supervisor_tracking' || activeTab === 'route' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Navigation className="w-3.5 h-3.5" /> All Worker Routes
+            </button>
+
+            <button
+              onClick={() => onSelectTab && onSelectTab('supervisor_analytics')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === 'supervisor_analytics' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" /> Catchment Analytics
+            </button>
+          </>
+        )}
       </div>
 
-      {/* Notification Bell Dropdown */}
+      {/* Notification Bell */}
       <div className="relative">
         <button
           onClick={() => setIsNotifyOpen(!isNotifyOpen)}
           className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white relative transition-colors"
+          title="Alert Notifications"
         >
           <Bell className="w-4 h-4" />
           <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Activity, MapPin, AlertOctagon, RefreshCw, LogOut, Menu, Globe, Wifi } from 'lucide-react';
 import { NavigationMenu } from './ui/navigation-menu';
 
@@ -44,9 +44,9 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Navigation Menu (Desktop) */}
-        <div className="hidden lg:flex items-center flex-1 max-w-xs mx-2">
-          <NavigationMenu activeTab={activeTab} onSelectTab={onSelectTab} />
+        {/* Dynamic Role Navigation Menu (Desktop) */}
+        <div className="hidden lg:flex items-center flex-1 max-w-sm mx-2">
+          <NavigationMenu activeRole={activeRole} activeTab={activeTab} onSelectTab={onSelectTab} />
         </div>
 
         {/* Controls & Features */}
@@ -101,13 +101,13 @@ export default function Navbar({
           <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center text-xs">
             <button
               onClick={() => setActiveRole('asha_worker')}
-              className={`px-2.5 py-0.5 rounded-lg font-medium transition-all ${activeRole === 'asha_worker' ? 'bg-sky-600 text-white' : 'text-slate-400'}`}
+              className={`px-2.5 py-0.5 rounded-lg font-medium transition-all ${activeRole === 'asha_worker' ? 'bg-sky-600 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
             >
               Worker
             </button>
             <button
               onClick={() => setActiveRole('supervisor')}
-              className={`px-2.5 py-0.5 rounded-lg font-medium transition-all ${activeRole === 'supervisor' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+              className={`px-2.5 py-0.5 rounded-lg font-medium transition-all ${activeRole === 'supervisor' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
             >
               Supervisor
             </button>
