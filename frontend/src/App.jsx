@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import AshaCompanionDashboard from './components/AshaCompanionDashboard';
 import MyRoutePage from './components/pages/MyRoutePage';
+import ReportsPage from './components/pages/ReportsPage';
+import MessagesPage from './components/pages/MessagesPage';
+import TrainingPage from './components/pages/TrainingPage';
+import ResourcesPage from './components/pages/ResourcesPage';
+import SettingsPage from './components/pages/SettingsPage';
+
 import EmergencyModal from './components/EmergencyModal';
 import AIExplanationModal from './components/AIExplanationModal';
 import SupervisorDashboard from './components/SupervisorDashboard';
@@ -218,7 +224,6 @@ export default function App() {
       <main className="flex-1 flex flex-col">
         {activeRole === 'asha_worker' ? (
           activeTab === 'route' ? (
-            /* MY ROUTE PAGE (Exact Replica of User Image) */
             <MyRoutePage
               stops={stops}
               workerLocation={MOCK_WORKER.current_location}
@@ -239,8 +244,42 @@ export default function App() {
                 onBatchImport={handleBatchImport}
               />
             </div>
+          ) : activeTab === 'reports' ? (
+            <ReportsPage
+              currentUser={currentUser}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+              onTriggerEmergency={() => setIsEmergencyOpen(true)}
+              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+            />
+          ) : activeTab === 'messages' ? (
+            <MessagesPage
+              currentUser={currentUser}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+              onTriggerEmergency={() => setIsEmergencyOpen(true)}
+              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+            />
+          ) : activeTab === 'training' ? (
+            <TrainingPage
+              currentUser={currentUser}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+              onTriggerEmergency={() => setIsEmergencyOpen(true)}
+              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+            />
+          ) : activeTab === 'resources' ? (
+            <ResourcesPage
+              currentUser={currentUser}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+              onTriggerEmergency={() => setIsEmergencyOpen(true)}
+              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+            />
+          ) : activeTab === 'settings' ? (
+            <SettingsPage
+              currentUser={currentUser}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+              onTriggerEmergency={() => setIsEmergencyOpen(true)}
+              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+            />
           ) : (
-            /* ASHA COMPANION DASHBOARD */
             <AshaCompanionDashboard
               stops={stops}
               workerLocation={MOCK_WORKER.current_location}
@@ -249,6 +288,7 @@ export default function App() {
               onExplainRisk={(pid) => openRightDrawer(pid)}
               onTriggerEmergency={() => setIsEmergencyOpen(true)}
               onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
             />
           )
         ) : (
@@ -306,6 +346,9 @@ export default function App() {
             <CommandItem onSelect={() => { setActiveTab('dashboard'); setIsCommandOpen(false); }}>Dashboard</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('route'); setIsCommandOpen(false); }}>My Route</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('patients'); setIsCommandOpen(false); }}>Patient Directory</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('reports'); setIsCommandOpen(false); }}>Reports</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('messages'); setIsCommandOpen(false); }}>Messages</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('training'); setIsCommandOpen(false); }}>Training</CommandItem>
           </CommandGroup>
           <CommandGroup heading="Actions">
             <CommandItem onSelect={() => { setIsEmergencyOpen(true); setIsCommandOpen(false); }}>🚨 Emergency Trigger</CommandItem>
