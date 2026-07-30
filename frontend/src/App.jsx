@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
-import RouteMap from './components/RouteMap';
-import RouteStopCard from './components/RouteStopCard';
+import WorkerDashboard from './components/WorkerDashboard';
 import EmergencyModal from './components/EmergencyModal';
 import AIExplanationModal from './components/AIExplanationModal';
 import SupervisorDashboard from './components/SupervisorDashboard';
@@ -20,7 +19,7 @@ import { Pagination } from './components/ui/pagination';
 import { Sidebar } from './components/ui/sidebar';
 import RiskBadge from './components/RiskBadge';
 
-import { MapPin, Navigation, Clock, CheckCircle2, AlertOctagon, UserCheck, Search, Sparkles, Home, Calendar as CalendarIcon } from 'lucide-react';
+import { MapPin, Navigation, Clock, CheckCircle2, AlertOctagon, UserCheck, Search, Sparkles, Home } from 'lucide-react';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -232,11 +231,8 @@ export default function App() {
     return <PhoneOTPLogin onLoginSuccess={handleLoginSuccess} />;
   }
 
-  const completedCount = stops.filter(s => s.status === 'visited').length;
-  const totalKm = stops.reduce((acc, s) => acc + s.distance_km, 0).toFixed(1);
-
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f8f9ff] text-[#0b1c30] flex flex-col font-sans">
       {/* Toast Banner */}
       {notification && (
         <div className={`fixed top-16 right-4 z-50 px-4 py-2.5 rounded-2xl shadow-2xl border text-xs font-semibold flex items-center gap-2 animate-bounce ${
@@ -244,7 +240,7 @@ export default function App() {
             ? 'bg-red-600 text-white border-red-400 shadow-red-900/50'
             : notification.type === 'success'
             ? 'bg-emerald-600 text-white border-emerald-400'
-            : 'bg-blue-600 text-white border-blue-400'
+            : 'bg-indigo-600 text-white border-indigo-400'
         }`}>
           {notification.type === 'emergency' ? <AlertOctagon className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
           {notification.msg}
@@ -267,7 +263,7 @@ export default function App() {
       />
 
       {/* Sub-Header Breadcrumb & Command Bar */}
-      <div className="bg-white border-b border-slate-200 px-4 py-2 shadow-xs">
+      <div className="bg-white/80 border-b border-slate-200/80 px-4 py-2">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs">
           <Breadcrumb>
             <BreadcrumbItem><Home className="w-3.5 h-3.5 text-slate-500" /> Home</BreadcrumbItem>
@@ -275,113 +271,48 @@ export default function App() {
             <BreadcrumbItem>PHC Ramanthapur</BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem isCurrent>
-              {activeRole === 'supervisor' ? 'Supervisor Command Center' : (activeTab === 'route' ? "Today's Route" : "Patient Directory")}
+              {activeRole === 'supervisor' ? 'Supervisor Command Center' : (activeTab === 'route' ? "Active Dispatch" : "Patient Directory")}
             </BreadcrumbItem>
           </Breadcrumb>
 
           <button
             onClick={() => setIsCommandOpen(true)}
-            className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-colors"
+            className="flex items-center gap-2 px-3 py-1 bg-white rounded-xl border border-slate-200 text-[11px] text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-colors shadow-xs"
           >
-            <Search className="w-3 h-3 text-blue-600" />
+            <Search className="w-3 h-3 text-indigo-600" />
             <span>Search Command Palette...</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-slate-200 border border-slate-300 font-mono text-[9px]">Ctrl+K</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-300 font-mono text-[9px]">Ctrl+K</kbd>
           </button>
         </div>
       </div>
 
-      {/* Main View Container (Clean Government Light Theme) */}
+      {/* Main View Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
         {activeRole === 'asha_worker' ? (
           /* ASHA FIELD WORKER DEDICATED PORTAL */
-          <div className="space-y-6">
-            {activeTab === 'route' ? (
-              <div className="space-y-6">
-                {/* Worker Summary Banner */}
-                <div className="p-4 sm:p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h2 className="text-xl font-bold text-slate-900">
-                        {currentLanguage === 'TE' ? 'ఈరోజు ఆప్టిమైజ్ చేసిన మార్గం' : currentLanguage === 'HI' ? 'आज का अनुकूलित मार्ग' : "Today's Optimized Route"}
-                      </h2>
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold">
-                        Live VRPTW Solver Active
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-600 flex items-center gap-2">
-                      <span>Assigned Worker: <strong className="text-slate-900">{currentUser.name}</strong></span> •
-                      <span>Sector: <strong className="text-slate-900">{MOCK_WORKER.assigned_village}</strong></span>
-                    </p>
-                  </div>
-
-                  {/* Clean Today Date Badge & Route Metrics */}
-                  <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <div className="px-3.5 py-2 rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4 text-blue-600" />
-                      <span>Today • July 30, 2026</span>
-                    </div>
-
-                    <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Distance</span>
-                      <span className="text-xs font-bold text-blue-700">{totalKm} km</span>
-                    </div>
-
-                    <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Duration</span>
-                      <span className="text-xs font-bold text-indigo-700">3h 30m</span>
-                    </div>
-
-                    <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Visited</span>
-                      <span className="text-xs font-bold text-emerald-700">{completedCount}/{stops.length}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Split Screen: Left Route List, Right Interactive Map */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  <div className="lg:col-span-5 space-y-3">
-                    <div className="flex items-center justify-between px-1">
-                      <h3 className="font-bold text-slate-800 text-sm">
-                        {currentLanguage === 'TE' ? 'వరుస సందర్శనలు' : currentLanguage === 'HI' ? 'अनुक्रम दौरे' : `Sequence Stops (${stops.length})`}
-                      </h3>
-                      <span className="text-xs text-slate-500">Risk Priority Ordered</span>
-                    </div>
-
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-                      {stops.map(stop => (
-                        <RouteStopCard
-                          key={stop.stop_id}
-                          stop={stop}
-                          onStatusChange={handleStatusChange}
-                          onExplainRisk={(pid) => openRightDrawer(pid)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-7 h-[500px] lg:h-auto">
-                    <RouteMap
-                      stops={stops}
-                      workerLocation={MOCK_WORKER.current_location}
-                      onExplainRisk={(pid) => openRightDrawer(pid)}
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <PatientManagement
-                  patients={patients}
-                  onUpdatePatient={handleUpdatePatient}
-                  onSelectPatient={(p) => openRightDrawer(p.patient_id)}
-                  onRegisterNewPatient={() => setIsRegisterOpen(true)}
-                  onBatchImport={handleBatchImport}
-                />
-                <Pagination currentPage={1} totalPages={3} onPageChange={(p) => showToast(`Page ${p} loaded`, 'info')} />
-              </div>
-            )}
-          </div>
+          activeTab === 'route' ? (
+            <WorkerDashboard
+              stops={stops}
+              workerLocation={MOCK_WORKER.current_location}
+              currentUser={currentUser}
+              currentLanguage={currentLanguage}
+              onStatusChange={handleStatusChange}
+              onExplainRisk={(pid) => openRightDrawer(pid)}
+              onTriggerEmergency={() => setIsEmergencyOpen(true)}
+              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+            />
+          ) : (
+            <div className="space-y-4">
+              <PatientManagement
+                patients={patients}
+                onUpdatePatient={handleUpdatePatient}
+                onSelectPatient={(p) => openRightDrawer(p.patient_id)}
+                onRegisterNewPatient={() => setIsRegisterOpen(true)}
+                onBatchImport={handleBatchImport}
+              />
+              <Pagination currentPage={1} totalPages={3} onPageChange={(p) => showToast(`Page ${p} loaded`, 'info')} />
+            </div>
+          )
         ) : (
           /* PHC SUPERVISOR DEDICATED COMMAND CENTER PORTAL */
           <SupervisorDashboard onGenerateReport={() => setIsReportOpen(true)} />
@@ -432,8 +363,8 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-2xl text-xs space-y-1.5 text-blue-900">
-                <span className="font-bold flex items-center gap-1 text-blue-800 uppercase text-[10px]"><Sparkles className="w-3.5 h-3.5" /> Gemini Priority Rationale</span>
+              <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-2xl text-xs space-y-1.5 text-indigo-950">
+                <span className="font-bold flex items-center gap-1 text-indigo-800 uppercase text-[10px]"><Sparkles className="w-3.5 h-3.5" /> Gemini Priority Rationale</span>
                 <p>Prioritized due to 3rd trimester pregnancy combined with overdue ANC visit schedule. Blood pressure and fetal heart rate checkup recommended.</p>
               </div>
             </DrawerContent>
@@ -451,7 +382,7 @@ export default function App() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Quick Navigation">
-            <CommandItem onSelect={() => { setActiveTab('route'); setIsCommandOpen(false); }}>Today's Route & Map</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('route'); setIsCommandOpen(false); }}>Active Dispatch & Map</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('patients'); setIsCommandOpen(false); }}>Patient Directory & Risk Simulator</CommandItem>
           </CommandGroup>
           <CommandGroup heading="Actions">

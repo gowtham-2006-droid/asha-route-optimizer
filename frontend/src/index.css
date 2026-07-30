@@ -2,41 +2,53 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased font-sans min-h-screen;
+    background-color: #f8f9ff;
+    color: #0b1c30;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
   }
 }
 
-/* Government Light Medical Card Utilities */
+/* Glassmorphism & High-End Card Utilities */
 .glass-panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 12px 30px rgba(83, 44, 216, 0.05);
 }
 
-.glass-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+.glass-panel-interactive {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Custom Leaflet Map Pins */
+.glass-panel-interactive:hover {
+  box-shadow: 0 20px 40px rgba(108, 76, 241, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Leaflet Container Styling */
 .leaflet-container {
   font-family: inherit;
-  border-radius: 1.5rem;
+  border-radius: 1rem;
 }
 
-/* Scrollbar Styling */
+/* Custom Clean Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
+  background: transparent;
 }
+
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #c9c4d8;
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #6c4cf1;
 }
