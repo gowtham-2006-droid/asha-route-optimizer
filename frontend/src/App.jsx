@@ -14,14 +14,13 @@ import { MOCK_WORKER, MOCK_ROUTE_STOPS, MOCK_PATIENTS } from './services/mockDat
 
 // Custom UI Components
 import { Breadcrumb, BreadcrumbItem, BreadcrumbSeparator } from './components/ui/breadcrumb';
-import { Calendar } from './components/ui/calendar';
 import { Drawer, DrawerHeader, DrawerTitle, DrawerDescription, DrawerContent, DrawerFooter, DrawerClose } from './components/ui/drawer';
 import { CommandDialog, CommandInput, CommandList, CommandGroup, CommandItem, CommandEmpty } from './components/ui/command';
 import { Pagination } from './components/ui/pagination';
 import { Sidebar } from './components/ui/sidebar';
 import RiskBadge from './components/RiskBadge';
 
-import { MapPin, Navigation, Clock, CheckCircle2, AlertOctagon, UserCheck, Search, Sparkles, Home } from 'lucide-react';
+import { MapPin, Navigation, Clock, CheckCircle2, AlertOctagon, UserCheck, Search, Sparkles, Home, Calendar as CalendarIcon } from 'lucide-react';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -31,7 +30,6 @@ export default function App() {
 
   const [activeRole, setActiveRole] = useState(() => currentUser?.role || 'asha_worker');
   const [activeTab, setActiveTab] = useState('route');
-  const [selectedDate, setSelectedDate] = useState(30);
 
   const [currentLanguage, setCurrentLanguage] = useState('EN');
   const [isOfflineMode, setIsOfflineMode] = useState(false);
@@ -224,12 +222,6 @@ export default function App() {
     showToast("🚨 EMERGENCY DISPATCHED: Google OR-Tools re-routed Lakshmi Devi to Stop #1!", "emergency");
   };
 
-  const handleResetRoute = () => {
-    setStops(MOCK_ROUTE_STOPS);
-    setPatients(MOCK_PATIENTS);
-    showToast("Route sequence reset to initial baseline schedule", "info");
-  };
-
   const openRightDrawer = (patientId) => {
     const p = patients.find(pat => pat.patient_id === patientId) || patients[0];
     setDrawerPatient(p);
@@ -305,8 +297,8 @@ export default function App() {
           <div className="space-y-6">
             {activeTab === 'route' ? (
               <div className="space-y-6">
-                {/* Worker Summary & Date Selector */}
-                <div className="p-4 sm:p-6 rounded-3xl glass-panel flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                {/* Worker Summary Banner with Clean Today Date Badge */}
+                <div className="p-4 sm:p-6 rounded-3xl glass-panel flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <h2 className="text-xl font-bold text-white">
@@ -322,25 +314,26 @@ export default function App() {
                     </p>
                   </div>
 
-                  {/* Route Date Calendar Selector & Metrics */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
-                    <Calendar selectedDate={selectedDate} onSelectDate={(d) => { setSelectedDate(d); showToast(`Loaded schedule for July ${d}, 2026`, 'info'); }} />
+                  {/* Clean Today Date Badge & Route Metrics */}
+                  <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <div className="px-3.5 py-2 rounded-2xl bg-sky-600/20 border border-sky-500/30 text-sky-300 text-xs font-bold flex items-center gap-2">
+                      <CalendarIcon className="w-4 h-4 text-sky-400" />
+                      <span>Today • July 30, 2026</span>
+                    </div>
 
-                    <div className="grid grid-cols-3 gap-2 w-full sm:w-auto">
-                      <div className="px-3 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-                        <span className="text-[9px] text-slate-500 block uppercase font-bold">Distance</span>
-                        <span className="text-xs font-bold text-sky-400">{totalKm} km</span>
-                      </div>
+                    <div className="px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
+                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Distance</span>
+                      <span className="text-xs font-bold text-sky-400">{totalKm} km</span>
+                    </div>
 
-                      <div className="px-3 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-                        <span className="text-[9px] text-slate-500 block uppercase font-bold">Duration</span>
-                        <span className="text-xs font-bold text-indigo-400">3h 30m</span>
-                      </div>
+                    <div className="px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
+                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Duration</span>
+                      <span className="text-xs font-bold text-indigo-400">3h 30m</span>
+                    </div>
 
-                      <div className="px-3 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-                        <span className="text-[9px] text-slate-500 block uppercase font-bold">Visited</span>
-                        <span className="text-xs font-bold text-emerald-400">{completedCount}/{stops.length}</span>
-                      </div>
+                    <div className="px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
+                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Visited</span>
+                      <span className="text-xs font-bold text-emerald-400">{completedCount}/{stops.length}</span>
                     </div>
                   </div>
                 </div>
