@@ -236,7 +236,7 @@ export default function App() {
   const totalKm = stops.reduce((acc, s) => acc + s.distance_km, 0).toFixed(1);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans">
       {/* Toast Banner */}
       {notification && (
         <div className={`fixed top-16 right-4 z-50 px-4 py-2.5 rounded-2xl shadow-2xl border text-xs font-semibold flex items-center gap-2 animate-bounce ${
@@ -244,7 +244,7 @@ export default function App() {
             ? 'bg-red-600 text-white border-red-400 shadow-red-900/50'
             : notification.type === 'success'
             ? 'bg-emerald-600 text-white border-emerald-400'
-            : 'bg-indigo-600 text-white border-indigo-400'
+            : 'bg-blue-600 text-white border-blue-400'
         }`}>
           {notification.type === 'emergency' ? <AlertOctagon className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
           {notification.msg}
@@ -267,10 +267,10 @@ export default function App() {
       />
 
       {/* Sub-Header Breadcrumb & Command Bar */}
-      <div className="bg-slate-900/40 border-b border-slate-800/80 px-4 py-2">
+      <div className="bg-white border-b border-slate-200 px-4 py-2 shadow-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs">
           <Breadcrumb>
-            <BreadcrumbItem><Home className="w-3.5 h-3.5 text-slate-400" /> Home</BreadcrumbItem>
+            <BreadcrumbItem><Home className="w-3.5 h-3.5 text-slate-500" /> Home</BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>PHC Ramanthapur</BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -281,16 +281,16 @@ export default function App() {
 
           <button
             onClick={() => setIsCommandOpen(true)}
-            className="flex items-center gap-2 px-3 py-1 bg-slate-900 rounded-xl border border-slate-800 text-[11px] text-slate-400 hover:text-white transition-colors"
+            className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-colors"
           >
-            <Search className="w-3 h-3 text-sky-400" />
+            <Search className="w-3 h-3 text-blue-600" />
             <span>Search Command Palette...</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 font-mono text-[9px]">Ctrl+K</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-slate-200 border border-slate-300 font-mono text-[9px]">Ctrl+K</kbd>
           </button>
         </div>
       </div>
 
-      {/* Main View Container (Strictly Role-Based) */}
+      {/* Main View Container (Clean Government Light Theme) */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
         {activeRole === 'asha_worker' ? (
           /* ASHA FIELD WORKER DEDICATED PORTAL */
@@ -298,42 +298,42 @@ export default function App() {
             {activeTab === 'route' ? (
               <div className="space-y-6">
                 {/* Worker Summary Banner */}
-                <div className="p-4 sm:p-6 rounded-3xl glass-panel flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="p-4 sm:p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h2 className="text-xl font-bold text-white">
+                      <h2 className="text-xl font-bold text-slate-900">
                         {currentLanguage === 'TE' ? 'ఈరోజు ఆప్టిమైజ్ చేసిన మార్గం' : currentLanguage === 'HI' ? 'आज का अनुकूलित मार्ग' : "Today's Optimized Route"}
                       </h2>
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold">
                         Live VRPTW Solver Active
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 flex items-center gap-2">
-                      <span>Assigned Worker: <strong>{currentUser.name}</strong></span> •
-                      <span>Sector: <strong>{MOCK_WORKER.assigned_village}</strong></span>
+                    <p className="text-xs text-slate-600 flex items-center gap-2">
+                      <span>Assigned Worker: <strong className="text-slate-900">{currentUser.name}</strong></span> •
+                      <span>Sector: <strong className="text-slate-900">{MOCK_WORKER.assigned_village}</strong></span>
                     </p>
                   </div>
 
                   {/* Clean Today Date Badge & Route Metrics */}
                   <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <div className="px-3.5 py-2 rounded-2xl bg-sky-600/20 border border-sky-500/30 text-sky-300 text-xs font-bold flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4 text-sky-400" />
+                    <div className="px-3.5 py-2 rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold flex items-center gap-2">
+                      <CalendarIcon className="w-4 h-4 text-blue-600" />
                       <span>Today • July 30, 2026</span>
                     </div>
 
-                    <div className="px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
+                    <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-center">
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">Distance</span>
-                      <span className="text-xs font-bold text-sky-400">{totalKm} km</span>
+                      <span className="text-xs font-bold text-blue-700">{totalKm} km</span>
                     </div>
 
-                    <div className="px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
+                    <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-center">
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">Duration</span>
-                      <span className="text-xs font-bold text-indigo-400">3h 30m</span>
+                      <span className="text-xs font-bold text-indigo-700">3h 30m</span>
                     </div>
 
-                    <div className="px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
+                    <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-center">
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">Visited</span>
-                      <span className="text-xs font-bold text-emerald-400">{completedCount}/{stops.length}</span>
+                      <span className="text-xs font-bold text-emerald-700">{completedCount}/{stops.length}</span>
                     </div>
                   </div>
                 </div>
@@ -342,10 +342,10 @@ export default function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   <div className="lg:col-span-5 space-y-3">
                     <div className="flex items-center justify-between px-1">
-                      <h3 className="font-bold text-slate-200 text-sm">
+                      <h3 className="font-bold text-slate-800 text-sm">
                         {currentLanguage === 'TE' ? 'వరుస సందర్శనలు' : currentLanguage === 'HI' ? 'अनुक्रम दौरे' : `Sequence Stops (${stops.length})`}
                       </h3>
-                      <span className="text-xs text-slate-400">Risk Priority Ordered</span>
+                      <span className="text-xs text-slate-500">Risk Priority Ordered</span>
                     </div>
 
                     <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
@@ -388,7 +388,7 @@ export default function App() {
         )}
       </main>
 
-      <footer className="border-t border-slate-900 py-3 text-center text-xs text-slate-500">
+      <footer className="border-t border-slate-200 py-3 text-center text-xs text-slate-500 bg-white">
         Idea2Impact 2026 — ASHA Route Optimizer AI • Built with React, FastAPI, OR-Tools & Gemini
       </footer>
 
@@ -420,20 +420,20 @@ export default function App() {
             </DrawerHeader>
 
             <DrawerContent>
-              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 text-xs">
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
                 <span className="text-slate-500 font-bold uppercase block text-[10px]">Maternal & Clinical Flags</span>
-                <p className="text-slate-200 font-semibold">
+                <p className="text-slate-900 font-semibold">
                   {drawerPatient.is_pregnant ? `Pregnant — Trimester ${drawerPatient.trimester}` : 'General Health Checkup'}
                 </p>
                 <div className="flex flex-wrap gap-1 pt-1">
                   {drawerPatient.chronic_disease_flags?.map(f => (
-                    <span key={f} className="px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-semibold uppercase text-[10px]">{f}</span>
+                    <span key={f} className="px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-300 font-bold uppercase text-[10px]">{f}</span>
                   ))}
                 </div>
               </div>
 
-              <div className="p-3 bg-indigo-950/20 border border-indigo-900/50 rounded-2xl text-xs space-y-1.5 text-indigo-100">
-                <span className="font-bold flex items-center gap-1 text-indigo-400 uppercase text-[10px]"><Sparkles className="w-3.5 h-3.5" /> Gemini Priority Rationale</span>
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-2xl text-xs space-y-1.5 text-blue-900">
+                <span className="font-bold flex items-center gap-1 text-blue-800 uppercase text-[10px]"><Sparkles className="w-3.5 h-3.5" /> Gemini Priority Rationale</span>
                 <p>Prioritized due to 3rd trimester pregnancy combined with overdue ANC visit schedule. Blood pressure and fetal heart rate checkup recommended.</p>
               </div>
             </DrawerContent>

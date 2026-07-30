@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Plus, UserCheck, ShieldAlert, Sparkles, Activity, MapPin, Eye, Edit3, RefreshCw, Upload } from 'lucide-react';
+import { Search, Plus, UserCheck, MapPin, Eye, RefreshCw, Upload } from 'lucide-react';
 import RiskBadge from './RiskBadge';
 import BatchPatientUploadModal from './BatchPatientUploadModal';
 
@@ -10,10 +10,8 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
   const [editingPatient, setEditingPatient] = useState(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
-  // Extract unique villages
   const villages = ['ALL', ...new Set(patients.map(p => p.village))];
 
-  // Filter patients based on search and filters
   const filteredPatients = patients.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           p.patient_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -26,13 +24,13 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
   return (
     <div className="space-y-6">
       {/* Top Header & Search Bar */}
-      <div className="p-6 rounded-3xl glass-panel space-y-4">
+      <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              Patient Management Directory <UserCheck className="w-5 h-5 text-sky-400" />
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              Patient Care Directory <UserCheck className="w-5 h-5 text-blue-600" />
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               PHC Ramanthapur Catchment Area • {patients.length} Registered Patients
             </p>
           </div>
@@ -40,14 +38,14 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsUploadOpen(true)}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-xs flex items-center gap-2 shadow-sm transition-all"
+              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold text-xs flex items-center gap-2 transition-all"
             >
-              <Upload className="w-4 h-4 text-sky-400" /> Upload CSV Batch
+              <Upload className="w-4 h-4 text-blue-600" /> Upload CSV Batch
             </button>
 
             <button
               onClick={onRegisterNewPatient}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-semibold text-xs flex items-center gap-2 shadow-lg shadow-sky-600/30 transition-all hover:scale-105 active:scale-95"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-600/30 transition-all hover:scale-105 active:scale-95"
             >
               <Plus className="w-4 h-4" /> Register Patient
             </button>
@@ -58,13 +56,13 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2">
           {/* Search Box */}
           <div className="sm:col-span-6 relative">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
               type="text"
               placeholder="Search by patient name, ID, or village..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-500 focus:border-sky-500 focus:outline-none"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
             />
           </div>
 
@@ -73,7 +71,7 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
             <select
               value={filterRiskBand}
               onChange={(e) => setFilterRiskBand(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 text-xs focus:border-sky-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs font-medium focus:border-blue-600 focus:outline-none"
             >
               <option value="ALL">All Risk Bands</option>
               <option value="CRITICAL">🔴 Critical Only</option>
@@ -88,7 +86,7 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
             <select
               value={filterVillage}
               onChange={(e) => setFilterVillage(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 text-xs focus:border-sky-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs font-medium focus:border-blue-600 focus:outline-none"
             >
               {villages.map(v => (
                 <option key={v} value={v}>{v === 'ALL' ? 'All Villages' : v}</option>
@@ -99,10 +97,10 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
       </div>
 
       {/* Patient Master Table */}
-      <div className="rounded-2xl glass-card overflow-hidden border border-slate-800">
+      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-900/90 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-700">
+            <thead className="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="p-3.5">Patient Info</th>
                 <th className="p-3.5">Village / Sector</th>
@@ -112,37 +110,34 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
                 <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-200">
               {filteredPatients.map((patient) => (
-                <tr key={patient.patient_id} className="hover:bg-slate-800/40 transition-colors">
-                  {/* Name & ID */}
+                <tr key={patient.patient_id} className="hover:bg-slate-50 transition-colors">
                   <td className="p-3.5">
                     <div>
-                      <span className="font-bold text-white text-sm block">{patient.name}</span>
+                      <span className="font-bold text-slate-900 text-sm block">{patient.name}</span>
                       <span className="text-[10px] text-slate-500 font-mono">{patient.patient_id} • Age {patient.age} ({patient.gender})</span>
                     </div>
                   </td>
 
-                  {/* Village */}
                   <td className="p-3.5">
-                    <span className="flex items-center gap-1 text-slate-300">
-                      <MapPin className="w-3.5 h-3.5 text-slate-500" /> {patient.village}
+                    <span className="flex items-center gap-1 text-slate-700 font-medium">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" /> {patient.village}
                     </span>
                   </td>
 
-                  {/* Maternal Status */}
                   <td className="p-3.5">
                     {patient.is_pregnant ? (
                       <div className="space-y-0.5">
-                        <span className="px-2 py-0.5 rounded bg-pink-500/20 text-pink-400 border border-pink-500/30 text-[10px] font-semibold">
+                        <span className="px-2 py-0.5 rounded bg-pink-100 text-pink-800 border border-pink-300 text-[10px] font-bold">
                           Pregnant (Trimester {patient.trimester})
                         </span>
                         {patient.high_risk_pregnancy && (
-                          <span className="block text-[10px] text-red-400 font-bold">⚠️ High-Risk Pregnancy</span>
+                          <span className="block text-[10px] text-red-600 font-bold">⚠️ High-Risk Pregnancy</span>
                         )}
                       </div>
                     ) : patient.newborn_age_days > 0 ? (
-                      <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-semibold">
+                      <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-300 text-[10px] font-bold">
                         Newborn ({patient.newborn_age_days} days old)
                       </span>
                     ) : (
@@ -150,37 +145,34 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
                     )}
                   </td>
 
-                  {/* Vaccination & Overdue */}
                   <td className="p-3.5">
                     <div className="space-y-0.5">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
-                        patient.vaccination_status === 'overdue' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-400'
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        patient.vaccination_status === 'overdue' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-700'
                       }`}>
                         Vaccine: {patient.vaccination_status.replace('_', ' ')}
                       </span>
                       {patient.days_overdue > 0 && (
-                        <span className="block text-[10px] text-amber-400 font-medium">{patient.days_overdue} days overdue</span>
+                        <span className="block text-[10px] text-amber-700 font-bold">{patient.days_overdue} days overdue</span>
                       )}
                     </div>
                   </td>
 
-                  {/* Risk Badge */}
                   <td className="p-3.5">
                     <RiskBadge band={patient.risk_band} score={patient.risk_score} />
                   </td>
 
-                  {/* Actions */}
                   <td className="p-3.5 text-right space-x-2">
                     <button
                       onClick={() => onSelectPatient(patient)}
-                      className="px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border border-sky-500/20 text-xs font-semibold"
+                      className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-bold"
                     >
                       <Eye className="w-3.5 h-3.5 inline mr-1" /> View
                     </button>
 
                     <button
                       onClick={() => setEditingPatient(patient)}
-                      className="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 text-xs font-semibold"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300 text-xs font-bold"
                     >
                       <RefreshCw className="w-3.5 h-3.5 inline mr-1" /> Simulate AI
                     </button>
@@ -192,7 +184,6 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
         </div>
       </div>
 
-      {/* Clinical Risk Simulator Modal */}
       {editingPatient && (
         <ClinicalRiskSimulatorModal
           patient={editingPatient}
@@ -204,7 +195,6 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
         />
       )}
 
-      {/* Bulk CSV Upload Modal */}
       <BatchPatientUploadModal
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
@@ -214,7 +204,6 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
   );
 }
 
-// Subcomponent: Live Clinical Risk Simulator Modal
 function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
   const [isPregnant, setIsPregnant] = useState(patient.is_pregnant);
   const [trimester, setTrimester] = useState(patient.trimester);
@@ -266,37 +255,32 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-      <div className="bg-slate-900 border border-sky-500/40 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
-        <div className="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/30">
-              <Activity className="w-6 h-6 animate-pulse" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white leading-tight">Live ML Risk Simulator</h3>
-              <p className="text-xs text-sky-400 font-medium">Patient: {patient.name} ({patient.patient_id})</p>
-            </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
+        <div className="flex items-center justify-between gap-4 pb-3 border-b border-slate-200">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">Live ML Risk Simulator</h3>
+            <p className="text-xs text-blue-600 font-semibold">Patient: {patient.name} ({patient.patient_id})</p>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white bg-slate-800">✕</button>
+          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-700 bg-slate-100">✕</button>
         </div>
 
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-950 to-slate-900 border border-slate-800 mb-4 flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between">
           <div>
-            <span className="text-[10px] text-slate-400 uppercase font-bold block">Simulated Risk Score</span>
-            <span className="text-2xl font-bold text-white">{simulated.score}/100</span>
+            <span className="text-[10px] text-slate-500 uppercase font-bold block">Simulated Risk Score</span>
+            <span className="text-2xl font-bold text-slate-900">{simulated.score}/100</span>
           </div>
           <RiskBadge band={simulated.band} score={simulated.score} />
         </div>
 
-        <div className="space-y-4 text-xs">
-          <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 space-y-2">
-            <label className="flex items-center gap-2 text-white font-semibold cursor-pointer">
+        <div className="space-y-4 text-xs text-slate-700">
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <label className="flex items-center gap-2 text-slate-900 font-bold cursor-pointer">
               <input
                 type="checkbox"
                 checked={isPregnant}
                 onChange={(e) => setIsPregnant(e.target.checked)}
-                className="w-4 h-4 accent-sky-500 rounded"
+                className="w-4 h-4 accent-blue-600 rounded"
               />
               Is Pregnant Patient?
             </label>
@@ -304,11 +288,11 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
             {isPregnant && (
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <div>
-                  <label className="text-slate-400 block mb-1">Trimester</label>
+                  <label className="text-slate-600 block mb-1 font-semibold">Trimester</label>
                   <select
                     value={trimester}
                     onChange={(e) => setTrimester(Number(e.target.value))}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white"
+                    className="w-full bg-white border border-slate-300 rounded-lg p-1.5 text-slate-900"
                   >
                     <option value={1}>1st Trimester</option>
                     <option value={2}>2nd Trimester (+10)</option>
@@ -317,12 +301,12 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
                 </div>
 
                 <div className="flex items-center pt-4">
-                  <label className="flex items-center gap-1.5 text-red-400 font-bold cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-red-600 font-bold cursor-pointer">
                     <input
                       type="checkbox"
                       checked={highRiskPregnancy}
                       onChange={(e) => setHighRiskPregnancy(e.target.checked)}
-                      className="w-4 h-4 accent-red-500 rounded"
+                      className="w-4 h-4 accent-red-600 rounded"
                     />
                     High-Risk Flag (+30)
                   </label>
@@ -330,54 +314,15 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
               </div>
             )}
           </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-slate-400 block mb-1">Vaccination Status</label>
-              <select
-                value={vaccinationStatus}
-                onChange={(e) => setVaccinationStatus(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white"
-              >
-                <option value="up_to_date">Up To Date</option>
-                <option value="due">Due Soon</option>
-                <option value="overdue">Overdue (+15)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-slate-400 block mb-1">Days Overdue Visit</label>
-              <input
-                type="number"
-                min={0}
-                max={60}
-                value={daysOverdue}
-                onChange={(e) => setDaysOverdue(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white"
-              />
-            </div>
-          </div>
-
-          <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80">
-            <label className="flex items-center gap-2 text-amber-400 font-semibold cursor-pointer">
-              <input
-                type="checkbox"
-                checked={hasAnemia}
-                onChange={(e) => setHasAnemia(e.target.checked)}
-                className="w-4 h-4 accent-amber-500 rounded"
-              />
-              Flag Severe Anemia (+15 points)
-            </label>
-          </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-5 border-t border-slate-800 mt-4">
-          <button onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
+        <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+          <button onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Cancel</button>
           <button
             onClick={handleApply}
-            className="px-5 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-sky-600/30 flex items-center gap-2"
+            className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/30"
           >
-            <Sparkles className="w-4 h-4" /> Recalculate Risk & Re-Order Route
+            Recalculate Risk & Re-Order Route
           </button>
         </div>
       </div>

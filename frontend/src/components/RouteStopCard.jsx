@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Clock, Navigation, CheckCircle2, XCircle, Sparkles, Volume2 } from 'lucide-react';
+import { MapPin, Clock, Navigation, CheckCircle2, Sparkles, Volume2 } from 'lucide-react';
 import RiskBadge from './RiskBadge';
 
 export default function RouteStopCard({ stop, onStatusChange, onExplainRisk }) {
@@ -27,15 +27,14 @@ export default function RouteStopCard({ stop, onStatusChange, onExplainRisk }) {
   };
 
   const isVisited = stop.status === 'visited';
-  const isMissed = stop.status === 'missed';
 
   return (
     <div className={`p-4 rounded-2xl border transition-all duration-200 ${
       stop.is_emergency
-        ? 'bg-red-950/30 border-red-500/60 shadow-lg shadow-red-900/30 animate-pulse'
+        ? 'bg-red-50 border-red-400 shadow-md animate-pulse'
         : isVisited
-        ? 'bg-slate-900/40 border-slate-800 opacity-75'
-        : 'bg-slate-900/80 hover:bg-slate-900 border-slate-800 hover:border-slate-700 shadow-md'
+        ? 'bg-slate-50 border-slate-200 opacity-80'
+        : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md'
     }`}>
       {/* Top Header: Sequence #, Name, Risk Badge */}
       <div className="flex items-start justify-between gap-3 mb-2">
@@ -44,18 +43,18 @@ export default function RouteStopCard({ stop, onStatusChange, onExplainRisk }) {
             stop.is_emergency
               ? 'bg-red-600 shadow-md shadow-red-600/50'
               : isVisited
-              ? 'bg-emerald-600/30 text-emerald-400 border border-emerald-500/30'
-              : 'bg-sky-600'
+              ? 'bg-emerald-600 text-white'
+              : 'bg-blue-600'
           }`}>
             {stop.is_emergency ? '🚨' : `#${stop.sequence}`}
           </div>
 
           <div>
-            <h4 className={`font-bold text-sm leading-snug ${isVisited ? 'line-through text-slate-400' : 'text-white'}`}>
+            <h4 className={`font-bold text-sm leading-snug ${isVisited ? 'line-through text-slate-400' : 'text-slate-900'}`}>
               {stop.patient_name}
             </h4>
-            <span className="text-xs text-slate-400 flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-slate-500" /> {stop.village}
+            <span className="text-xs text-slate-500 flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-slate-400" /> {stop.village}
             </span>
           </div>
         </div>
@@ -64,33 +63,33 @@ export default function RouteStopCard({ stop, onStatusChange, onExplainRisk }) {
       </div>
 
       {/* ETA & Distance Row */}
-      <div className="grid grid-cols-2 gap-2 my-2 py-2 px-3 bg-slate-950/60 rounded-xl text-xs">
-        <div className="flex items-center gap-1.5 text-slate-300">
-          <Clock className="w-3.5 h-3.5 text-sky-400" />
-          <span>ETA: <strong>{stop.estimated_arrival}</strong></span>
+      <div className="grid grid-cols-2 gap-2 my-2 py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+        <div className="flex items-center gap-1.5 text-slate-700 font-medium">
+          <Clock className="w-3.5 h-3.5 text-blue-600" />
+          <span>ETA: <strong className="text-slate-900">{stop.estimated_arrival}</strong></span>
         </div>
-        <div className="flex items-center gap-1.5 text-slate-300">
-          <Navigation className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Distance: <strong>{stop.distance_km} km</strong></span>
+        <div className="flex items-center gap-1.5 text-slate-700 font-medium">
+          <Navigation className="w-3.5 h-3.5 text-indigo-600" />
+          <span>Distance: <strong className="text-slate-900">{stop.distance_km} km</strong></span>
         </div>
       </div>
 
       {/* Actions & Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
         <div className="flex items-center gap-1">
           {/* AI Explanation Button */}
           <button
             onClick={() => onExplainRisk(stop.patient_id)}
-            className="px-2.5 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-sky-400 text-xs font-semibold flex items-center gap-1"
+            className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-xs font-bold flex items-center gap-1"
           >
-            <Sparkles className="w-3.5 h-3.5" /> AI Rationale
+            <Sparkles className="w-3.5 h-3.5 text-blue-600" /> AI Rationale
           </button>
 
           {/* Text-To-Speech Button */}
           <button
             onClick={handleTextToSpeech}
             className={`p-1.5 rounded-lg border text-xs ${
-              isSpeaking ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 animate-pulse' : 'bg-slate-800 text-slate-400 hover:text-white border-slate-700'
+              isSpeaking ? 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse' : 'bg-slate-100 text-slate-600 hover:text-slate-900 border-slate-200'
             }`}
             title="Read instructions out loud"
           >
@@ -102,7 +101,7 @@ export default function RouteStopCard({ stop, onStatusChange, onExplainRisk }) {
             href={`https://www.google.com/maps/dir/?api=1&destination=${stop.latitude},${stop.longitude}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-sky-400 border border-slate-700"
+            className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:text-blue-600 border border-slate-200"
             title="Open Google Maps Directions"
           >
             <Navigation className="w-3.5 h-3.5" />
@@ -113,10 +112,10 @@ export default function RouteStopCard({ stop, onStatusChange, onExplainRisk }) {
         <div className="flex items-center gap-1">
           <button
             onClick={() => onStatusChange(stop.stop_id, isVisited ? 'scheduled' : 'visited')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
               isVisited
-                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
-                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-slate-900 text-white hover:bg-slate-800'
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5" /> {isVisited ? 'Visited' : 'Mark Visited'}

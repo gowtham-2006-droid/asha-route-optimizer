@@ -37,26 +37,26 @@ export default function SupervisorDashboard({ onGenerateReport }) {
   const currentWorker = workers.find(w => w.id === selectedWorkerId) || workers[0];
 
   const riskDistributionData = [
-    { name: 'Critical', count: kpis.critical_risk_patients, color: '#ef4444' },
-    { name: 'High', count: kpis.high_risk_patients, color: '#f97316' },
-    { name: 'Moderate', count: kpis.moderate_risk_patients, color: '#eab308' },
-    { name: 'Low', count: kpis.low_risk_patients, color: '#22c55e' }
+    { name: 'Critical', count: kpis.critical_risk_patients, color: '#dc2626' },
+    { name: 'High', count: kpis.high_risk_patients, color: '#ea580c' },
+    { name: 'Moderate', count: kpis.moderate_risk_patients, color: '#d97706' },
+    { name: 'Low', count: kpis.low_risk_patients, color: '#16a34a' }
   ];
 
   return (
     <div className="space-y-6">
       {/* Header & Role Action Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-indigo-900/40 via-slate-900 to-slate-900 border border-indigo-500/30 shadow-xl">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-3xl bg-white border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              PHC Supervisor Command Center <Sparkles className="w-5 h-5 text-indigo-400" />
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              PHC Supervisor Command Center <Sparkles className="w-5 h-5 text-indigo-600" />
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300 text-xs font-bold">
               Multi-Worker Oversight
             </span>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500">
             PHC Ramanthapur Circle • Live GPS Tracking & Route Compliance Oversight
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function SupervisorDashboard({ onGenerateReport }) {
           <button
             onClick={() => setSupervisorTab('tracking')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              supervisorTab === 'tracking' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
+              supervisorTab === 'tracking' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200'
             }`}
           >
             <Navigation className="w-4 h-4" /> Live Worker Routes
@@ -74,7 +74,7 @@ export default function SupervisorDashboard({ onGenerateReport }) {
           <button
             onClick={() => setSupervisorTab('analytics')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              supervisorTab === 'analytics' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
+              supervisorTab === 'analytics' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200'
             }`}
           >
             <Users className="w-4 h-4" /> Catchment Analytics
@@ -82,7 +82,7 @@ export default function SupervisorDashboard({ onGenerateReport }) {
 
           <button
             onClick={onGenerateReport}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-500 hover:to-sky-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95"
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-600/30 transition-all hover:scale-105 active:scale-95"
           >
             <FileText className="w-4 h-4" /> EOD Report
           </button>
@@ -93,56 +93,56 @@ export default function SupervisorDashboard({ onGenerateReport }) {
         /* SUPERVISOR LIVE MULTI-WORKER TRACKING VIEW */
         <div className="space-y-6">
           {/* Worker Selector Bar */}
-          <div className="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-300">Select Field Worker to Monitor:</span>
+              <span className="text-xs font-bold text-slate-700">Select Field Worker to Monitor:</span>
               <div className="flex flex-wrap gap-2">
                 {workers.map((w) => (
                   <button
                     key={w.id}
                     onClick={() => setSelectedWorkerId(w.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                       selectedWorkerId === w.id
-                        ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30'
-                        : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
                     }`}
                   >
                     <UserCheck className="w-3.5 h-3.5" />
                     <span>{w.name}</span>
-                    <span className="text-[10px] opacity-75">({w.village.split(' ')[0]})</span>
+                    <span className="text-[10px] opacity-80">({w.village.split(' ')[0]})</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="text-xs text-sky-400 font-medium flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" /> Active Sector: <strong>{currentWorker.village}</strong>
+            <div className="text-xs text-blue-700 font-bold flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-blue-600" /> Active Sector: <strong>{currentWorker.village}</strong>
             </div>
           </div>
 
           {/* Supervisor Split Screen: Worker Route Card & Leaflet Map */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-5 space-y-3">
-              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+              <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-white text-sm">{currentWorker.name}'s Route Schedule</h3>
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
+                  <h3 className="font-bold text-slate-900 text-sm">{currentWorker.name}'s Route Schedule</h3>
+                  <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold">
                     Active On Field
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">Assigned Sector: {currentWorker.village}</p>
+                <p className="text-xs text-slate-500">Assigned Sector: {currentWorker.village}</p>
               </div>
 
               <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
                 {currentWorker.stops.map((stop) => (
-                  <div key={stop.stop_id} className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-3">
+                  <div key={stop.stop_id} className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-sky-600/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-xs">
+                      <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 border border-blue-300 flex items-center justify-center font-bold text-xs">
                         #{stop.sequence}
                       </div>
                       <div>
-                        <h4 className="font-bold text-white text-xs">{stop.patient_name}</h4>
-                        <span className="text-[10px] text-slate-400 block">{stop.village} • ETA {stop.estimated_arrival}</span>
+                        <h4 className="font-bold text-slate-900 text-xs">{stop.patient_name}</h4>
+                        <span className="text-[10px] text-slate-500 block">{stop.village} • ETA {stop.estimated_arrival}</span>
                       </div>
                     </div>
                     <RiskBadge band={stop.risk_band} score={stop.risk_score} />
@@ -165,53 +165,53 @@ export default function SupervisorDashboard({ onGenerateReport }) {
         <div className="space-y-6">
           {/* KPI Tiles Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl glass-card">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-semibold">Total Patients</span>
-                <Users className="w-4 h-4 text-sky-400" />
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+              <div className="flex items-center justify-between text-slate-500 mb-2">
+                <span className="text-xs font-bold">Total Patients</span>
+                <Users className="w-4 h-4 text-blue-600" />
               </div>
-              <p className="text-2xl font-bold text-white">{kpis.total_patients}</p>
-              <span className="text-[10px] text-emerald-400 font-medium">+4 registered this week</span>
+              <p className="text-2xl font-bold text-slate-900">{kpis.total_patients}</p>
+              <span className="text-[10px] text-emerald-700 font-bold">+4 registered this week</span>
             </div>
 
-            <div className="p-4 rounded-2xl glass-card border-red-500/30">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-semibold">Critical Risk</span>
-                <ShieldAlert className="w-4 h-4 text-red-400" />
+            <div className="p-4 rounded-2xl bg-white border border-red-200 shadow-sm">
+              <div className="flex items-center justify-between text-slate-500 mb-2">
+                <span className="text-xs font-bold">Critical Risk</span>
+                <ShieldAlert className="w-4 h-4 text-red-600" />
               </div>
-              <p className="text-2xl font-bold text-red-400">{kpis.critical_risk_patients}</p>
-              <span className="text-[10px] text-red-400/80 font-medium">Requires Priority Route 1</span>
+              <p className="text-2xl font-bold text-red-600">{kpis.critical_risk_patients}</p>
+              <span className="text-[10px] text-red-700 font-bold">Requires Priority Route 1</span>
             </div>
 
-            <div className="p-4 rounded-2xl glass-card">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-semibold">Visits Completed</span>
-                <CheckCircle className="w-4 h-4 text-emerald-400" />
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+              <div className="flex items-center justify-between text-slate-500 mb-2">
+                <span className="text-xs font-bold">Visits Completed</span>
+                <CheckCircle className="w-4 h-4 text-emerald-600" />
               </div>
-              <p className="text-2xl font-bold text-emerald-400">{kpis.completed_visits_today}/{kpis.scheduled_visits_today}</p>
-              <span className="text-[10px] text-emerald-400 font-medium">{kpis.route_compliance_rate}% Route Compliance</span>
+              <p className="text-2xl font-bold text-emerald-700">{kpis.completed_visits_today}/{kpis.scheduled_visits_today}</p>
+              <span className="text-[10px] text-emerald-700 font-bold">{kpis.route_compliance_rate}% Route Compliance</span>
             </div>
 
-            <div className="p-4 rounded-2xl glass-card">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-semibold">Emergencies Today</span>
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+              <div className="flex items-center justify-between text-slate-500 mb-2">
+                <span className="text-xs font-bold">Emergencies Today</span>
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
               </div>
-              <p className="text-2xl font-bold text-amber-400">{kpis.emergencies_today}</p>
-              <span className="text-[10px] text-amber-400/80 font-medium">Auto Re-Optimized by OR-Tools</span>
+              <p className="text-2xl font-bold text-amber-600">{kpis.emergencies_today}</p>
+              <span className="text-[10px] text-amber-700 font-bold">Auto Re-Optimized by OR-Tools</span>
             </div>
           </div>
 
           {/* Analytics Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="p-5 rounded-2xl glass-card space-y-3">
-              <h3 className="font-bold text-slate-200 text-sm">Patient Urgency Risk Breakdown</h3>
+            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
+              <h3 className="font-bold text-slate-900 text-sm">Patient Urgency Risk Breakdown</h3>
               <div className="h-64 w-full pt-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={riskDistributionData}>
-                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                    <YAxis stroke="#94a3b8" fontSize={12} />
-                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#fff' }} />
+                    <XAxis dataKey="name" stroke="#64748b" fontSize={12} />
+                    <YAxis stroke="#64748b" fontSize={12} />
+                    <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#cbd5e1', borderRadius: '12px', color: '#0f172a' }} />
                     <Bar dataKey="count" radius={[8, 8, 0, 0]}>
                       {riskDistributionData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -222,14 +222,14 @@ export default function SupervisorDashboard({ onGenerateReport }) {
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl glass-card space-y-3">
-              <h3 className="font-bold text-slate-200 text-sm">High-Risk Priority Roster</h3>
+            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
+              <h3 className="font-bold text-slate-900 text-sm">High-Risk Priority Roster</h3>
               <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                 {MOCK_PATIENTS.map((patient) => (
-                  <div key={patient.patient_id} className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center justify-between gap-3">
+                  <div key={patient.patient_id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
                     <div>
-                      <h4 className="font-semibold text-white text-xs">{patient.name}</h4>
-                      <p className="text-[10px] text-slate-400">{patient.village} • {patient.visit_type.replace('_', ' ')}</p>
+                      <h4 className="font-bold text-slate-900 text-xs">{patient.name}</h4>
+                      <p className="text-[10px] text-slate-500">{patient.village} • {patient.visit_type.replace('_', ' ')}</p>
                     </div>
                     <RiskBadge band={patient.risk_band} score={patient.risk_score} />
                   </div>
