@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Search, Filter, Plus, UserCheck, ShieldAlert, Sparkles, Activity, MapPin, Eye, Edit3, RefreshCw } from 'lucide-react';
+import { Search, Filter, Plus, UserCheck, ShieldAlert, Sparkles, Activity, MapPin, Eye, Edit3, RefreshCw, Upload } from 'lucide-react';
 import RiskBadge from './RiskBadge';
+import BatchPatientUploadModal from './BatchPatientUploadModal';
 
-export default function PatientManagement({ patients, onUpdatePatient, onSelectPatient, onRegisterNewPatient }) {
+export default function PatientManagement({ patients, onUpdatePatient, onSelectPatient, onRegisterNewPatient, onBatchImport }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRiskBand, setFilterRiskBand] = useState('ALL');
   const [filterVillage, setFilterVillage] = useState('ALL');
   const [editingPatient, setEditingPatient] = useState(null);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   // Extract unique villages
   const villages = ['ALL', ...new Set(patients.map(p => p.village))];
@@ -35,12 +37,21 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
             </p>
           </div>
 
-          <button
-            onClick={onRegisterNewPatient}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-semibold text-xs flex items-center gap-2 shadow-lg shadow-sky-600/30 transition-all hover:scale-105 active:scale-95"
-          >
-            <Plus className="w-4 h-4" /> Register New Patient
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsUploadOpen(true)}
+              className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-xs flex items-center gap-2 shadow-sm transition-all"
+            >
+              <Upload className="w-4 h-4 text-sky-400" /> Upload CSV Batch
+            </button>
+
+            <button
+              onClick={onRegisterNewPatient}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-semibold text-xs flex items-center gap-2 shadow-lg shadow-sky-600/30 transition-all hover:scale-105 active:scale-95"
+            >
+              <Plus className="w-4 h-4" /> Register Patient
+            </button>
+          </div>
         </div>
 
         {/* Filter Controls Row */}
@@ -192,6 +203,13 @@ export default function PatientManagement({ patients, onUpdatePatient, onSelectP
           }}
         />
       )}
+
+      {/* Bulk CSV Upload Modal */}
+      <BatchPatientUploadModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        onBatchImport={onBatchImport}
+      />
     </div>
   );
 }
@@ -206,7 +224,6 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
   const [previousMissed, setPreviousMissed] = useState(patient.previous_missed_visits);
   const [hasAnemia, setHasAnemia] = useState(patient.chronic_disease_flags?.includes('anemia') || false);
 
-  // Compute live simulated risk score using the formula specified in PRD 4.1.2
   const calculateSimulatedScore = () => {
     let score = 0;
     if (highRiskPregnancy) score += 30;
@@ -218,7 +235,6 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
     score += Math.min(previousMissed, 3) * 10;
     if (hasAnemia) score += 15;
 
-    // Clamp score 0 to 100
     score = Math.min(Math.max(Math.round(score), 10), 100);
 
     let band = 'Low';
@@ -265,7 +281,6 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white bg-slate-800">✕</button>
         </div>
 
-        {/* Live Score Preview Banner */}
         <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-950 to-slate-900 border border-slate-800 mb-4 flex items-center justify-between">
           <div>
             <span className="text-[10px] text-slate-400 uppercase font-bold block">Simulated Risk Score</span>
@@ -274,9 +289,7 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
           <RiskBadge band={simulated.band} score={simulated.score} />
         </div>
 
-        {/* Clinical Controls */}
         <div className="space-y-4 text-xs">
-          {/* Pregnancy Controls */}
           <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 space-y-2">
             <label className="flex items-center gap-2 text-white font-semibold cursor-pointer">
               <input
@@ -304,7 +317,7 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
                 </div>
 
                 <div className="flex items-center pt-4">
-                  <label className="flex items-center gap-2 text-red-400 font-bold cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-red-400 font-bold cursor-pointer">
                     <input
                       type="checkbox"
                       checked={highRiskPregnancy}
@@ -318,7 +331,6 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
             )}
           </div>
 
-          {/* Vaccination & Overdue */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-slate-400 block mb-1">Vaccination Status</label>
@@ -346,7 +358,6 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
             </div>
           </div>
 
-          {/* Clinical Flags */}
           <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80">
             <label className="flex items-center gap-2 text-amber-400 font-semibold cursor-pointer">
               <input
@@ -360,7 +371,6 @@ function ClinicalRiskSimulatorModal({ patient, onClose, onSave }) {
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="flex justify-end gap-3 pt-5 border-t border-slate-800 mt-4">
           <button onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
           <button

@@ -20,7 +20,7 @@ export default function App() {
   });
 
   const [activeRole, setActiveRole] = useState(() => currentUser?.role || 'asha_worker');
-  const [activeTab, setActiveTab] = useState('route'); // 'route' | 'patients'
+  const [activeTab, setActiveTab] = useState('route');
   const [patients, setPatients] = useState(MOCK_PATIENTS);
   const [stops, setStops] = useState(MOCK_ROUTE_STOPS);
 
@@ -43,14 +43,12 @@ export default function App() {
     setTimeout(() => setNotification(null), 4000);
   };
 
-  // Login handler
   const handleLoginSuccess = (userProfile) => {
     setCurrentUser(userProfile);
     setActiveRole(userProfile.role);
     showToast(`Welcome ${userProfile.name}! Authentication verified via Phone OTP.`, 'success');
   };
 
-  // Logout handler
   const handleLogout = () => {
     localStorage.removeItem('asha_jwt_token');
     localStorage.removeItem('asha_user_profile');
@@ -58,13 +56,11 @@ export default function App() {
     showToast('Session logged out successfully', 'info');
   };
 
-  // Handle visit status updates
   const handleStatusChange = (stopId, newStatus) => {
     setStops(prev => prev.map(s => s.stop_id === stopId ? { ...s, status: newStatus } : s));
     showToast(`Visit status updated to ${newStatus.toUpperCase()}`, 'success');
   };
 
-  // Handle clinical risk simulation updates from Patient Management
   const handleUpdatePatient = (updatedPatient) => {
     setPatients(prev => prev.map(p => p.patient_id === updatedPatient.patient_id ? updatedPatient : p));
 
@@ -87,7 +83,6 @@ export default function App() {
     showToast(`✨ ML Risk Score recalculated for ${updatedPatient.name} (${updatedPatient.risk_score}/100 — ${updatedPatient.risk_band}). Route re-ordered!`, 'success');
   };
 
-  // Register new patient
   const handleRegisterNewPatient = (newPatient) => {
     setPatients(prev => [newPatient, ...prev]);
 
@@ -117,7 +112,34 @@ export default function App() {
     showToast(`Patient ${newPatient.name} registered. Risk Score: ${newPatient.risk_score} (${newPatient.risk_band})`, 'success');
   };
 
-  // Simulate Emergency Dispatch & OR-Tools Re-routing
+  // Bulk CSV Batch Ingestion Handler
+  const handleBatchImport = (importedPatients) => {
+    setPatients(prev => [...importedPatients, ...prev]);
+
+    // Insert high risk imported patients onto map route
+    const newStops = importedPatients.map((p, idx) => ({
+      sequence: idx + 1,
+      stop_id: `stp_csv_${Date.now()}_${idx}`,
+      patient_id: p.patient_id,
+      patient_name: p.name,
+      village: p.village,
+      latitude: p.latitude,
+      longitude: p.longitude,
+      visit_type: p.visit_type,
+      estimated_arrival: '10:00 AM',
+      estimated_departure: '10:25 AM',
+      travel_time_minutes: 15,
+      distance_km: 2.4,
+      risk_score: p.risk_score,
+      risk_band: p.risk_band,
+      status: 'scheduled',
+      is_emergency: false
+    }));
+
+    setStops(prev => [...newStops, ...prev].map((s, idx) => ({ ...s, sequence: idx + 1 })));
+    showToast(`✨ CSV Batch Ingested: ${importedPatients.length} patients scored and added to map!`, 'success');
+  };
+
   const handleSimulateEmergency = (emergencyData) => {
     const emergencyStop = {
       sequence: 1,
@@ -151,14 +173,12 @@ export default function App() {
     showToast("🚨 EMERGENCY DISPATCHED: Google OR-Tools re-routed Lakshmi Devi to Stop #1!", "emergency");
   };
 
-  // Reset demo route
   const handleResetRoute = () => {
     setStops(MOCK_ROUTE_STOPS);
     setPatients(MOCK_PATIENTS);
     showToast("Route sequence reset to initial baseline schedule", "info");
   };
 
-  // Render Phone OTP Login Screen if unauthenticated
   if (!currentUser) {
     return <PhoneOTPLogin onLoginSuccess={handleLoginSuccess} />;
   }
@@ -168,7 +188,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {/* Toast Notification Banner */}
+      {/* Toast Banner */}
       {notification && (
         <div className={`fixed top-16 right-4 z-50 px-4 py-2.5 rounded-2xl shadow-2xl border text-xs font-semibold flex items-center gap-2 animate-bounce ${
           notification.type === 'emergency'
@@ -182,7 +202,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Navigation Header */}
       <Navbar
         activeRole={activeRole}
         setActiveRole={setActiveRole}
@@ -192,11 +211,9 @@ export default function App() {
         onResetRoute={handleResetRoute}
       />
 
-      {/* Main View Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
         {activeRole === 'asha_worker' ? (
           <div className="space-y-6">
-            {/* View Sub-Tabs: Today's Route vs Patient Management */}
             <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
               <button
                 onClick={() => setActiveTab('route')}
@@ -223,7 +240,6 @@ export default function App() {
 
             {activeTab === 'route' ? (
               <div className="space-y-6">
-                {/* Worker Summary Header */}
                 <div className="p-4 sm:p-6 rounded-3xl glass-panel flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -238,7 +254,6 @@ export default function App() {
                     </p>
                   </div>
 
-                  {/* Route Metrics */}
                   <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="flex-1 md:flex-none px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">Total Distance</span>
@@ -263,9 +278,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Split Screen: Left Route List, Right Interactive Map */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  {/* Route Sequence Stops List */}
                   <div className="lg:col-span-5 space-y-3">
                     <div className="flex items-center justify-between px-1">
                       <h3 className="font-bold text-slate-200 text-sm flex items-center gap-2">
@@ -286,7 +299,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Interactive Leaflet Route Map */}
                   <div className="lg:col-span-7 h-[500px] lg:h-auto">
                     <RouteMap
                       stops={stops}
@@ -297,27 +309,24 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              /* Patient Directory & Live Clinical Risk Simulator */
               <PatientManagement
                 patients={patients}
                 onUpdatePatient={handleUpdatePatient}
                 onSelectPatient={(p) => setSelectedPatientDetail(p)}
                 onRegisterNewPatient={() => setIsRegisterOpen(true)}
+                onBatchImport={handleBatchImport}
               />
             )}
           </div>
         ) : (
-          /* Supervisor Analytics Command Dashboard */
           <SupervisorDashboard onGenerateReport={() => setIsReportOpen(true)} />
         )}
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-slate-900 py-3 text-center text-xs text-slate-500">
         Idea2Impact 2026 — ASHA Route Optimizer AI • Built with React, FastAPI, OR-Tools & Gemini
       </footer>
 
-      {/* Modals */}
       <EmergencyModal
         isOpen={isEmergencyOpen}
         onClose={() => setIsEmergencyOpen(false)}
