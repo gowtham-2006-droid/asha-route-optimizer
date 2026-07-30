@@ -1,15 +1,20 @@
 import React from 'react';
-import { Activity, Navigation, UserCheck, Calendar, ShieldAlert, FileText, Settings, X, ChevronRight } from 'lucide-react';
+import { Activity, Navigation, UserCheck, Shield, X, ChevronRight, FileText } from 'lucide-react';
 
-export function Sidebar({ isOpen, onClose, activeTab, onSelectTab }) {
+export function Sidebar({ isOpen, onClose, activeRole, activeTab, onSelectTab }) {
   if (!isOpen) return null;
 
-  const navItems = [
+  const workerNavItems = [
     { id: 'route', label: "Today's Route & Map", icon: <Navigation className="w-4 h-4 text-sky-400" /> },
     { id: 'patients', label: 'Patient Directory', icon: <UserCheck className="w-4 h-4 text-indigo-400" /> },
-    { id: 'calendar', label: 'Route Calendar', icon: <Calendar className="w-4 h-4 text-emerald-400" /> },
-    { id: 'supervisor', label: 'Supervisor Dashboard', icon: <FileText className="w-4 h-4 text-amber-400" /> },
   ];
+
+  const supervisorNavItems = [
+    { id: 'supervisor_tracking', label: 'All Worker Field Routes', icon: <Navigation className="w-4 h-4 text-indigo-400" /> },
+    { id: 'supervisor_analytics', label: 'Catchment Analytics & KPIs', icon: <FileText className="w-4 h-4 text-amber-400" /> },
+  ];
+
+  const currentNavItems = activeRole === 'supervisor' ? supervisorNavItems : workerNavItems;
 
   return (
     <div className="fixed inset-0 z-50 flex bg-slate-950/80 backdrop-blur-md animate-fade-in font-sans">
@@ -17,11 +22,15 @@ export function Sidebar({ isOpen, onClose, activeTab, onSelectTab }) {
         {/* Header */}
         <div className="flex items-center justify-between gap-3 mb-8 pb-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-lg ${
+              activeRole === 'supervisor' ? 'bg-gradient-to-tr from-indigo-600 to-purple-600' : 'bg-gradient-to-tr from-sky-500 to-indigo-600'
+            }`}>
               <Activity className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-bold text-white text-sm leading-tight">ASHA Optimizer</h2>
+              <h2 className="font-bold text-white text-sm leading-tight">
+                {activeRole === 'supervisor' ? 'Supervisor Portal' : 'ASHA Optimizer'}
+              </h2>
               <span className="text-[10px] text-sky-400 font-mono">PHC Ramanthapur</span>
             </div>
           </div>
@@ -33,7 +42,7 @@ export function Sidebar({ isOpen, onClose, activeTab, onSelectTab }) {
 
         {/* Navigation Items */}
         <div className="space-y-1.5 flex-1">
-          {navItems.map((item) => (
+          {currentNavItems.map((item) => (
             <button
               key={item.id}
               onClick={() => {
@@ -42,7 +51,7 @@ export function Sidebar({ isOpen, onClose, activeTab, onSelectTab }) {
               }}
               className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === item.id
-                  ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30'
+                  ? (activeRole === 'supervisor' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-sky-600 text-white shadow-lg shadow-sky-600/30')
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
               }`}
             >

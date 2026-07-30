@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Activity, MapPin, AlertOctagon, LogOut, Menu, Globe, Wifi, Shield, UserCheck } from 'lucide-react';
 import { NavigationMenu } from './ui/navigation-menu';
 
@@ -55,14 +55,14 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Dynamic Role Navigation Menu */}
+        {/* Role-Specific Navigation Menu */}
         <div className="hidden lg:flex items-center flex-1 max-w-sm mx-2">
           <NavigationMenu activeRole={activeRole} activeTab={activeTab} onSelectTab={onSelectTab} />
         </div>
 
-        {/* Controls & User Profile */}
+        {/* Clean Role-Based Actions */}
         <div className="flex items-center gap-2">
-          {/* Multilingual Selector [EN | TE | HI] */}
+          {/* Worker-Only Language Selector */}
           {activeRole === 'asha_worker' && (
             <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-0.5 text-xs font-semibold">
               <Globe className="w-3.5 h-3.5 text-slate-500 ml-1.5 mr-0.5" />
@@ -98,10 +98,10 @@ export default function Navbar({
             title="Toggle Network Sync Mode"
           >
             <Wifi className="w-3 h-3" />
-            <span className="hidden sm:inline">{isOfflineMode ? '⚡ Offline' : '📶 Cloud Synced'}</span>
+            <span className="hidden sm:inline">{isOfflineMode ? '⚡ Offline' : '📶 Online'}</span>
           </button>
 
-          {/* Emergency Trigger (Worker Portal Only) */}
+          {/* Worker-Only Emergency Button */}
           {activeRole === 'asha_worker' && (
             <button
               onClick={onTriggerEmergency}
@@ -112,7 +112,7 @@ export default function Navbar({
             </button>
           )}
 
-          {/* Logged In User Profile Pill */}
+          {/* User Profile Badge */}
           {currentUser && (
             <div className="hidden xl:flex items-center gap-2 px-3 py-1 bg-slate-950 rounded-xl border border-slate-800 text-xs">
               {activeRole === 'supervisor' ? <Shield className="w-3.5 h-3.5 text-indigo-400" /> : <UserCheck className="w-3.5 h-3.5 text-sky-400" />}
@@ -120,7 +120,7 @@ export default function Navbar({
             </div>
           )}
 
-          {/* Logout Button */}
+          {/* Logout */}
           {onLogout && (
             <button
               onClick={onLogout}
