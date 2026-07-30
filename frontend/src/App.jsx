@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AshaCompanionDashboard from './components/AshaCompanionDashboard';
 import MyRoutePage from './components/pages/MyRoutePage';
+import PatientsPage from './components/pages/PatientsPage';
 import ReportsPage from './components/pages/ReportsPage';
 import MessagesPage from './components/pages/MessagesPage';
 import TrainingPage from './components/pages/TrainingPage';
@@ -11,7 +12,6 @@ import EmergencyModal from './components/EmergencyModal';
 import AIExplanationModal from './components/AIExplanationModal';
 import SupervisorDashboard from './components/SupervisorDashboard';
 import ReportModal from './components/ReportModal';
-import PatientManagement from './components/PatientManagement';
 import RegisterPatientModal from './components/RegisterPatientModal';
 import PatientDetailModal from './components/PatientDetailModal';
 import PhoneOTPLogin from './components/PhoneOTPLogin';
@@ -235,15 +235,17 @@ export default function App() {
               onNavigateToTab={(tab) => setActiveTab(tab)}
             />
           ) : activeTab === 'patients' ? (
-            <div className="p-6">
-              <PatientManagement
-                patients={patients}
-                onUpdatePatient={handleUpdatePatient}
-                onSelectPatient={(p) => openRightDrawer(p.patient_id)}
-                onRegisterNewPatient={() => setIsRegisterOpen(true)}
-                onBatchImport={handleBatchImport}
-              />
-            </div>
+            /* PATIENTS PAGE (Exact Replica of User Mockup) */
+            <PatientsPage
+              patients={patients}
+              currentUser={currentUser}
+              onUpdatePatient={handleUpdatePatient}
+              onSelectPatient={(p) => openRightDrawer(p.patient_id)}
+              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onBatchImport={handleBatchImport}
+              onTriggerEmergency={() => setIsEmergencyOpen(true)}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+            />
           ) : activeTab === 'reports' ? (
             <ReportsPage
               currentUser={currentUser}
@@ -346,9 +348,6 @@ export default function App() {
             <CommandItem onSelect={() => { setActiveTab('dashboard'); setIsCommandOpen(false); }}>Dashboard</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('route'); setIsCommandOpen(false); }}>My Route</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('patients'); setIsCommandOpen(false); }}>Patient Directory</CommandItem>
-            <CommandItem onSelect={() => { setActiveTab('reports'); setIsCommandOpen(false); }}>Reports</CommandItem>
-            <CommandItem onSelect={() => { setActiveTab('messages'); setIsCommandOpen(false); }}>Messages</CommandItem>
-            <CommandItem onSelect={() => { setActiveTab('training'); setIsCommandOpen(false); }}>Training</CommandItem>
           </CommandGroup>
           <CommandGroup heading="Actions">
             <CommandItem onSelect={() => { setIsEmergencyOpen(true); setIsCommandOpen(false); }}>🚨 Emergency Trigger</CommandItem>
