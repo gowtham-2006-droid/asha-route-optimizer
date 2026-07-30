@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AshaCompanionDashboard from './components/AshaCompanionDashboard';
+import MyRoutePage from './components/pages/MyRoutePage';
 import EmergencyModal from './components/EmergencyModal';
 import AIExplanationModal from './components/AIExplanationModal';
 import SupervisorDashboard from './components/SupervisorDashboard';
@@ -24,7 +25,7 @@ export default function App() {
   });
 
   const [activeRole, setActiveRole] = useState(() => currentUser?.role || 'asha_worker');
-  const [activeTab, setActiveTab] = useState('route');
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   const [patients, setPatients] = useState(MOCK_PATIENTS);
   const [stops, setStops] = useState(MOCK_ROUTE_STOPS);
@@ -68,7 +69,7 @@ export default function App() {
   const handleLoginSuccess = (userProfile) => {
     setCurrentUser(userProfile);
     setActiveRole(userProfile.role);
-    setActiveTab(userProfile.role === 'asha_worker' ? 'route' : 'supervisor');
+    setActiveTab(userProfile.role === 'asha_worker' ? 'dashboard' : 'supervisor');
     showToast(`Welcome ${userProfile.name}! Entered ${userProfile.role === 'asha_worker' ? 'ASHA Companion Portal' : 'PHC Supervisor Command Center'}.`, 'success');
   };
 
@@ -216,16 +217,40 @@ export default function App() {
       {/* Main Role View Container */}
       <main className="flex-1 flex flex-col">
         {activeRole === 'asha_worker' ? (
-          /* ASHA COMPANION DASHBOARD (Exact Match from User Image) */
-          <AshaCompanionDashboard
-            stops={stops}
-            workerLocation={MOCK_WORKER.current_location}
-            currentUser={currentUser}
-            onStatusChange={handleStatusChange}
-            onExplainRisk={(pid) => openRightDrawer(pid)}
-            onTriggerEmergency={() => setIsEmergencyOpen(true)}
-            onRegisterNewPatient={() => setIsRegisterOpen(true)}
-          />
+          activeTab === 'route' ? (
+            /* MY ROUTE PAGE (Exact Replica of User Image) */
+            <MyRoutePage
+              stops={stops}
+              workerLocation={MOCK_WORKER.current_location}
+              currentUser={currentUser}
+              onStatusChange={handleStatusChange}
+              onExplainRisk={(pid) => openRightDrawer(pid)}
+              onTriggerEmergency={() => setIsEmergencyOpen(true)}
+              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+            />
+          ) : activeTab === 'patients' ? (
+            <div className="p-6">
+              <PatientManagement
+                patients={patients}
+                onUpdatePatient={handleUpdatePatient}
+                onSelectPatient={(p) => openRightDrawer(p.patient_id)}
+                onRegisterNewPatient={() => setIsRegisterOpen(true)}
+                onBatchImport={handleBatchImport}
+              />
+            </div>
+          ) : (
+            /* ASHA COMPANION DASHBOARD */
+            <AshaCompanionDashboard
+              stops={stops}
+              workerLocation={MOCK_WORKER.current_location}
+              currentUser={currentUser}
+              onStatusChange={handleStatusChange}
+              onExplainRisk={(pid) => openRightDrawer(pid)}
+              onTriggerEmergency={() => setIsEmergencyOpen(true)}
+              onRegisterNewPatient={() => setIsRegisterOpen(true)}
+            />
+          )
         ) : (
           /* PHC SUPERVISOR DEDICATED COMMAND CENTER PORTAL */
           <SupervisorDashboard onGenerateReport={() => setIsReportOpen(true)} />
@@ -278,8 +303,9 @@ export default function App() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Quick Navigation">
-            <CommandItem onSelect={() => { setActiveTab('route'); setIsCommandOpen(false); }}>Active Dispatch & Map</CommandItem>
-            <CommandItem onSelect={() => { setActiveTab('patients'); setIsCommandOpen(false); }}>Patient Directory & Risk Simulator</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('dashboard'); setIsCommandOpen(false); }}>Dashboard</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('route'); setIsCommandOpen(false); }}>My Route</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('patients'); setIsCommandOpen(false); }}>Patient Directory</CommandItem>
           </CommandGroup>
           <CommandGroup heading="Actions">
             <CommandItem onSelect={() => { setIsEmergencyOpen(true); setIsCommandOpen(false); }}>🚨 Emergency Trigger</CommandItem>
