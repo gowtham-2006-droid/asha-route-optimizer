@@ -98,7 +98,8 @@ export default function App() {
   const handleLoginSuccess = (userProfile) => {
     setCurrentUser(userProfile);
     setActiveRole(userProfile.role);
-    showToast(`Welcome ${userProfile.name}! Authentication verified via Phone OTP.`, 'success');
+    setActiveTab(userProfile.role === 'asha_worker' ? 'route' : 'supervisor_tracking');
+    showToast(`Welcome ${userProfile.name}! Entered ${userProfile.role === 'asha_worker' ? 'ASHA Worker Portal' : 'PHC Supervisor Command Center'}.`, 'success');
   };
 
   const handleLogout = () => {
@@ -258,16 +259,14 @@ export default function App() {
         </div>
       )}
 
-      {/* Header */}
+      {/* Dedicated Portal Header */}
       <Navbar
         activeRole={activeRole}
-        setActiveRole={setActiveRole}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         currentUser={currentUser}
         onLogout={handleLogout}
         onTriggerEmergency={() => setIsEmergencyOpen(true)}
-        onResetRoute={handleResetRoute}
         onOpenSidebar={() => setIsSidebarOpen(true)}
         currentLanguage={currentLanguage}
         onLanguageChange={handleLanguageChange}
@@ -283,7 +282,9 @@ export default function App() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>PHC Ramanthapur</BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem isCurrent>{activeTab === 'route' ? (currentLanguage === 'TE' ? 'నేటి మార్గం' : currentLanguage === 'HI' ? 'आज का मार्ग' : "Today's Route") : "Patient Directory"}</BreadcrumbItem>
+            <BreadcrumbItem isCurrent>
+              {activeRole === 'supervisor' ? 'Supervisor Portal' : (activeTab === 'route' ? "Today's Route" : "Patient Directory")}
+            </BreadcrumbItem>
           </Breadcrumb>
 
           <button
@@ -297,9 +298,10 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main View Container */}
+      {/* Main View Container (Distinct per Portal) */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
         {activeRole === 'asha_worker' ? (
+          /* ASHA FIELD WORKER DEDICATED PORTAL */
           <div className="space-y-6">
             {activeTab === 'route' ? (
               <div className="space-y-6">
@@ -388,6 +390,7 @@ export default function App() {
             )}
           </div>
         ) : (
+          /* PHC SUPERVISOR DEDICATED COMMAND CENTER PORTAL */
           <SupervisorDashboard onGenerateReport={() => setIsReportOpen(true)} />
         )}
       </main>
@@ -402,8 +405,10 @@ export default function App() {
         onClose={() => setIsSidebarOpen(false)}
         activeTab={activeTab}
         onSelectTab={(tab) => {
-          if (tab === 'supervisor') setActiveRole('supervisor');
-          else {
+          if (tab === 'supervisor') {
+            setActiveRole('supervisor');
+            setActiveTab('supervisor_tracking');
+          } else {
             setActiveRole('asha_worker');
             setActiveTab(tab);
           }
@@ -458,7 +463,6 @@ export default function App() {
           <CommandGroup heading="Quick Navigation">
             <CommandItem onSelect={() => { setActiveTab('route'); setIsCommandOpen(false); }}>Today's Route & Map</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('patients'); setIsCommandOpen(false); }}>Patient Directory & Risk Simulator</CommandItem>
-            <CommandItem onSelect={() => { setActiveRole('supervisor'); setIsCommandOpen(false); }}>Supervisor Command Center</CommandItem>
           </CommandGroup>
           <CommandGroup heading="Actions">
             <CommandItem onSelect={() => { setIsEmergencyOpen(true); setIsCommandOpen(false); }}>🚨 Emergency Trigger</CommandItem>

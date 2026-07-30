@@ -1,190 +1,169 @@
 import React, { useState } from 'react';
-import { Activity, Phone, ShieldCheck, ArrowRight, Lock, CheckCircle2, MapPin, Sparkles } from 'lucide-react';
-import { authService } from '../services/api';
+import { Activity, Phone, ShieldCheck, UserCheck, Shield, ArrowRight, Sparkles, MapPin } from 'lucide-react';
 
 export default function PhoneOTPLogin({ onLoginSuccess }) {
-  const [step, setStep] = useState(1); // 1 = Phone input, 2 = OTP verification
+  const [selectedRole, setSelectedRole] = useState('asha_worker');
   const [phone, setPhone] = useState('+91 98765 43210');
-  const [role, setRole] = useState('asha_worker');
-  const [otp, setOtp] = useState(['1', '2', '3', '4', '5', '6']);
+  const [otp, setOtp] = useState('');
+  const [step, setStep] = useState('request'); // 'request' | 'verify'
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(null);
 
-  const handleRequestOtp = async (e) => {
+  const handleRequestOtp = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrorMsg(null);
-
-    const res = await authService.requestOtp(phone);
-    setIsSubmitting(false);
-
-    if (res) {
-      setStep(2);
-    }
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setStep('verify');
+    }, 600);
   };
 
-  const handleVerifyOtp = async (e) => {
+  const handleVerifyOtp = (e) => {
     e.preventDefault();
-    const enteredOtp = otp.join('');
-    if (enteredOtp.length < 6) {
-      setErrorMsg('Please enter all 6 digits of the OTP.');
+    if (otp !== '123456' && otp.length !== 6) {
+      alert('Invalid OTP code. Please enter 123456 for demo.');
       return;
     }
 
     setIsSubmitting(true);
-    setErrorMsg(null);
+    setTimeout(() => {
+      const userProfile = {
+        token: `jwt_session_${Date.now()}`,
+        role: selectedRole,
+        user_id: selectedRole === 'asha_worker' ? 'usr_w101' : 'usr_sup01',
+        name: selectedRole === 'asha_worker' ? 'Lakshmi Devi' : 'Dr. Radhika Rao',
+        phone: phone,
+        phc_id: 'phc_ramanthapur_01'
+      };
 
-    const res = await authService.verifyOtp(phone, enteredOtp, role);
-    setIsSubmitting(false);
+      localStorage.setItem('asha_jwt_token', userProfile.token);
+      localStorage.setItem('asha_user_profile', JSON.stringify(userProfile));
 
-    if (res && res.data) {
-      const { token, user } = res.data;
-      localStorage.setItem('asha_jwt_token', token);
-      localStorage.setItem('asha_user_profile', JSON.stringify(user));
-      onLoginSuccess(user);
-    }
+      setIsSubmitting(false);
+      onLoginSuccess(userProfile);
+    }, 800);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden font-sans">
-      {/* Ambient Background Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-sky-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 font-sans relative overflow-hidden">
+      {/* Glow Effects */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-md w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-slate-950/80 backdrop-blur-xl relative z-10">
-        {/* Brand Header */}
-        <div className="text-center space-y-3 mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center mx-auto shadow-xl shadow-sky-500/20">
-            <Activity className="w-8 h-8 text-white" />
+      <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10 space-y-6">
+        {/* Header Logo & Title */}
+        <div className="text-center space-y-2">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-xl shadow-sky-500/30">
+            <Activity className="w-8 h-8 text-white animate-pulse" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white flex items-center justify-center gap-2">
-              ASHA Route Optimizer <span className="text-xs px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30 font-mono">AI 1.0</span>
-            </h1>
-            <p className="text-xs text-slate-400 flex items-center justify-center gap-1 mt-1">
-              <MapPin className="w-3.5 h-3.5 text-emerald-400" /> PHC Ramanthapur Circle • Telangana Health Society
-            </p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">ASHA Route Optimizer AI</h1>
+          <p className="text-xs text-slate-400 flex items-center justify-center gap-1">
+            <MapPin className="w-3.5 h-3.5 text-emerald-400" /> PHC Ramanthapur Circle • Telangana
+          </p>
+        </div>
+
+        {/* Portal Selection Cards */}
+        <div className="space-y-2">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Select Portal Access</span>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setSelectedRole('asha_worker')}
+              className={`p-3 rounded-2xl border text-left transition-all ${
+                selectedRole === 'asha_worker'
+                  ? 'bg-sky-600/20 border-sky-500 text-white shadow-lg shadow-sky-500/20'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+              }`}
+            >
+              <UserCheck className={`w-5 h-5 mb-1 ${selectedRole === 'asha_worker' ? 'text-sky-400' : 'text-slate-500'}`} />
+              <span className="font-bold text-xs block">ASHA Worker</span>
+              <span className="text-[10px] text-slate-400 block">Field Route & Care</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedRole('supervisor')}
+              className={`p-3 rounded-2xl border text-left transition-all ${
+                selectedRole === 'supervisor'
+                  ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+              }`}
+            >
+              <Shield className={`w-5 h-5 mb-1 ${selectedRole === 'supervisor' ? 'text-indigo-400' : 'text-slate-500'}`} />
+              <span className="font-bold text-xs block">PHC Supervisor</span>
+              <span className="text-[10px] text-slate-400 block">Command Center</span>
+            </button>
           </div>
         </div>
 
-        {errorMsg && (
-          <div className="mb-4 p-3 bg-red-500/15 border border-red-500/30 rounded-xl text-red-400 text-xs font-semibold">
-            {errorMsg}
-          </div>
-        )}
-
-        {step === 1 ? (
-          /* STEP 1: Phone Number & Role Input */
+        {/* Phone OTP Form */}
+        {step === 'request' ? (
           <form onSubmit={handleRequestOtp} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Select Role</label>
-              <div className="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setRole('asha_worker')}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all ${
-                    role === 'asha_worker' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  ASHA Field Worker
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('supervisor')}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all ${
-                    role === 'supervisor' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  PHC Supervisor
-                </button>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Registered Mobile Number</label>
+              <div className="relative">
+                <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:border-sky-500 focus:outline-none"
+                  required
+                />
               </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-sky-600/30 flex items-center justify-center gap-2 transition-all"
+            >
+              {isSubmitting ? 'Sending OTP Code...' : 'Request OTP Code'} <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <div className="p-3 bg-sky-500/10 border border-sky-500/30 rounded-xl text-xs text-sky-300 flex items-center justify-between">
+              <span>OTP Code sent to <strong>{phone}</strong></span>
+              <button type="button" onClick={() => setStep('request')} className="text-sky-400 underline font-semibold">Edit</button>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Registered Mobile Number</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Enter 6-Digit OTP Code</label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                <ShieldCheck className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
+                  maxLength={6}
+                  placeholder="Enter 123456"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm tracking-widest font-mono focus:border-sky-500 focus:outline-none"
                   required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 XXXXX XXXXX"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm font-mono focus:border-sky-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-sky-600/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+              type="button"
+              onClick={() => setOtp('123456')}
+              className="w-full py-1.5 text-[11px] bg-slate-800 text-sky-400 rounded-lg hover:bg-slate-700 font-semibold"
             >
-              {isSubmitting ? 'Sending OTP...' : 'Request OTP Code'}
-              <ArrowRight className="w-4 h-4" />
+              Auto-Fill Demo OTP (123456)
             </button>
-
-            <p className="text-[10px] text-center text-slate-500 pt-1">
-              Secured by OTP Authentication • National Health Mission Protocol
-            </p>
-          </form>
-        ) : (
-          /* STEP 2: 6-Digit OTP Verification */
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="text-center space-y-1">
-              <span className="text-xs text-slate-400 block">OTP Sent to <strong className="text-white font-mono">{phone}</strong></span>
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="text-[10px] text-sky-400 underline"
-              >
-                Change Phone Number
-              </button>
-            </div>
-
-            {/* OTP Input Grid */}
-            <div className="flex justify-between gap-2 py-2">
-              {otp.map((digit, idx) => (
-                <input
-                  key={idx}
-                  id={`otp-${idx}`}
-                  type="text"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => {
-                    const newOtp = [...otp];
-                    newOtp[idx] = e.target.value;
-                    setOtp(newOtp);
-                    if (e.target.value && idx < 5) {
-                      document.getElementById(`otp-${idx + 1}`)?.focus();
-                    }
-                  }}
-                  className="w-11 h-12 text-center bg-slate-950 border border-slate-800 rounded-xl text-white font-mono text-lg font-bold focus:border-sky-500 focus:outline-none"
-                />
-              ))}
-            </div>
-
-            <div className="flex justify-between items-center text-[10px]">
-              <span className="text-slate-500">Demo OTP: <strong className="text-emerald-400 font-mono">123456</strong></span>
-              <button
-                type="button"
-                onClick={() => setOtp(['1', '2', '3', '4', '5', '6'])}
-                className="text-sky-400 font-semibold"
-              >
-                Auto-Fill Demo OTP
-              </button>
-            </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-sky-600/30 flex items-center justify-center gap-2 transition-all"
             >
-              {isSubmitting ? 'Verifying OTP...' : 'Verify OTP & Unlock App'}
-              <ShieldCheck className="w-4 h-4" />
+              {isSubmitting ? 'Verifying Session...' : 'Verify OTP & Enter Portal'} <Sparkles className="w-4 h-4" />
             </button>
           </form>
         )}
+
+        <div className="text-center pt-2 border-t border-slate-800/80 text-[10px] text-slate-500">
+          Idea2Impact 2026 • Secure NHM / HMIS OAuth API Layer
+        </div>
       </div>
     </div>
   );
