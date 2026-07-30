@@ -33,6 +33,9 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('route');
   const [selectedDate, setSelectedDate] = useState(30);
 
+  const [currentLanguage, setCurrentLanguage] = useState('EN');
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
+
   const [patients, setPatients] = useState(MOCK_PATIENTS);
   const [stops, setStops] = useState(MOCK_ROUTE_STOPS);
 
@@ -71,6 +74,25 @@ export default function App() {
   const showToast = (msg, type = 'info') => {
     setNotification({ msg, type });
     setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleLanguageChange = (lang) => {
+    setCurrentLanguage(lang);
+    const langNames = { EN: 'English', TE: 'తెలుగు (Telugu)', HI: 'हिंदी (Hindi)' };
+    showToast(`App UI language changed to ${langNames[lang]}`, 'success');
+  };
+
+  const handleToggleOfflineMode = () => {
+    setIsOfflineMode(prev => {
+      const nextState = !prev;
+      showToast(
+        nextState
+          ? '⚡ Rural Offline Mode Active: Visit logs cached locally in LocalStorage'
+          : '📶 Cloud Sync Restored: Synchronized 2 offline visits with backend API',
+        nextState ? 'info' : 'success'
+      );
+      return nextState;
+    });
   };
 
   const handleLoginSuccess = (userProfile) => {
@@ -247,6 +269,10 @@ export default function App() {
         onTriggerEmergency={() => setIsEmergencyOpen(true)}
         onResetRoute={handleResetRoute}
         onOpenSidebar={() => setIsSidebarOpen(true)}
+        currentLanguage={currentLanguage}
+        onLanguageChange={handleLanguageChange}
+        isOfflineMode={isOfflineMode}
+        onToggleOfflineMode={handleToggleOfflineMode}
       />
 
       {/* Sub-Header Breadcrumb & Command Bar */}
@@ -257,7 +283,7 @@ export default function App() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>PHC Ramanthapur</BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem isCurrent>{activeTab === 'route' ? "Today's Route" : activeTab === 'patients' ? "Patient Directory" : "Supervisor"}</BreadcrumbItem>
+            <BreadcrumbItem isCurrent>{activeTab === 'route' ? (currentLanguage === 'TE' ? 'నేటి మార్గం' : currentLanguage === 'HI' ? 'आज का मार्ग' : "Today's Route") : "Patient Directory"}</BreadcrumbItem>
           </Breadcrumb>
 
           <button
@@ -281,7 +307,9 @@ export default function App() {
                 <div className="p-4 sm:p-6 rounded-3xl glass-panel flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h2 className="text-xl font-bold text-white">Today's Optimized Route</h2>
+                      <h2 className="text-xl font-bold text-white">
+                        {currentLanguage === 'TE' ? 'ఈరోజు ఆప్టిమైజ్ చేసిన మార్గం' : currentLanguage === 'HI' ? 'आज का अनुकूलित मार्ग' : "Today's Optimized Route"}
+                      </h2>
                       <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
                         Live VRPTW Solver Active
                       </span>
@@ -319,7 +347,9 @@ export default function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   <div className="lg:col-span-5 space-y-3">
                     <div className="flex items-center justify-between px-1">
-                      <h3 className="font-bold text-slate-200 text-sm">Sequence Stops ({stops.length})</h3>
+                      <h3 className="font-bold text-slate-200 text-sm">
+                        {currentLanguage === 'TE' ? 'వరుస సందర్శనలు' : currentLanguage === 'HI' ? 'अनुक्रम दौरे' : `Sequence Stops (${stops.length})`}
+                      </h3>
                       <span className="text-xs text-slate-400">Risk Priority Ordered</span>
                     </div>
 

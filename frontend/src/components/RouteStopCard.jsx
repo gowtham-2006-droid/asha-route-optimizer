@@ -1,101 +1,126 @@
-import React from 'react';
-import { Clock, MapPin, Navigation, Sparkles, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapPin, Clock, Navigation, CheckCircle2, XCircle, Sparkles, Volume2 } from 'lucide-react';
 import RiskBadge from './RiskBadge';
 
 export default function RouteStopCard({ stop, onStatusChange, onExplainRisk }) {
-  const getStatusBadge = () => {
-    switch (stop.status) {
-      case 'visited':
-        return <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Visited</span>;
-      case 'missed':
-        return <span className="text-xs px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1"><XCircle className="w-3 h-3" /> Missed</span>;
-      case 'in_progress':
-        return <span className="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center gap-1"><Clock className="w-3 h-3 animate-spin" /> In Progress</span>;
-      case 'scheduled':
-      default:
-        return <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Scheduled</span>;
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const handleTextToSpeech = () => {
+    if (!('speechSynthesis' in window)) {
+      alert("Text-to-speech is not supported in this browser.");
+      return;
     }
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const textToRead = `Stop number ${stop.sequence}. Patient ${stop.patient_name} in ${stop.village}. Risk category ${stop.risk_band}, score ${stop.risk_score}. Estimated arrival ${stop.estimated_arrival}.`;
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    utterance.rate = 0.95;
+    utterance.onend = () => setIsSpeaking(false);
+
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
   };
 
+  const isVisited = stop.status === 'visited';
+  const isMissed = stop.status === 'missed';
+
   return (
-    <div className={`p-4 rounded-2xl glass-card transition-all hover:border-slate-700 ${
-      stop.is_emergency ? 'border-2 border-red-500/80 bg-red-950/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''
+    <div className={`p-4 rounded-2xl border transition-all duration-200 ${
+      stop.is_emergency
+        ? 'bg-red-950/30 border-red-500/60 shadow-lg shadow-red-900/30 animate-pulse'
+        : isVisited
+        ? 'bg-slate-900/40 border-slate-800 opacity-75'
+        : 'bg-slate-900/80 hover:bg-slate-900 border-slate-800 hover:border-slate-700 shadow-md'
     }`}>
-      {/* Header: Sequence & Risk Badge */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2">
-          <span className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold text-xs ${
-            stop.is_emergency ? 'bg-red-600 text-white animate-pulse' : 'bg-slate-800 text-slate-200 border border-slate-700'
+      {/* Top Header: Sequence #, Name, Risk Badge */}
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="flex items-center gap-3">
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-extrabold text-xs text-white shrink-0 ${
+            stop.is_emergency
+              ? 'bg-red-600 shadow-md shadow-red-600/50'
+              : isVisited
+              ? 'bg-emerald-600/30 text-emerald-400 border border-emerald-500/30'
+              : 'bg-sky-600'
           }`}>
             {stop.is_emergency ? '🚨' : `#${stop.sequence}`}
-          </span>
+          </div>
+
           <div>
-            <h3 className="font-bold text-slate-100 text-base leading-tight flex items-center gap-2">
+            <h4 className={`font-bold text-sm leading-snug ${isVisited ? 'line-through text-slate-400' : 'text-white'}`}>
               {stop.patient_name}
-              {stop.is_emergency && <span className="text-[10px] uppercase font-bold text-red-400 bg-red-500/20 px-1.5 py-0.5 rounded">Emergency</span>}
-            </h3>
-            <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+            </h4>
+            <span className="text-xs text-slate-400 flex items-center gap-1">
               <MapPin className="w-3 h-3 text-slate-500" /> {stop.village}
-            </p>
+            </span>
           </div>
         </div>
 
         <RiskBadge band={stop.risk_band} score={stop.risk_score} />
       </div>
 
-      {/* Details Row: ETA, Distance, Visit Type */}
-      <div className="grid grid-cols-3 gap-2 bg-slate-900/80 p-2.5 rounded-xl text-xs mb-3 border border-slate-800/80">
-        <div>
-          <span className="text-slate-500 block text-[10px]">ETA</span>
-          <span className="font-semibold text-slate-200 flex items-center gap-1 mt-0.5">
-            <Clock className="w-3 h-3 text-sky-400" /> {stop.estimated_arrival}
-          </span>
+      {/* ETA & Distance Row */}
+      <div className="grid grid-cols-2 gap-2 my-2 py-2 px-3 bg-slate-950/60 rounded-xl text-xs">
+        <div className="flex items-center gap-1.5 text-slate-300">
+          <Clock className="w-3.5 h-3.5 text-sky-400" />
+          <span>ETA: <strong>{stop.estimated_arrival}</strong></span>
         </div>
-        <div>
-          <span className="text-slate-500 block text-[10px]">Distance</span>
-          <span className="font-semibold text-slate-200 flex items-center gap-1 mt-0.5">
-            <Navigation className="w-3 h-3 text-indigo-400" /> {stop.distance_km} km
-          </span>
-        </div>
-        <div>
-          <span className="text-slate-500 block text-[10px]">Visit Type</span>
-          <span className="font-semibold text-slate-200 uppercase text-[10px] mt-0.5 block truncate">
-            {stop.visit_type.replace('_', ' ')}
-          </span>
+        <div className="flex items-center gap-1.5 text-slate-300">
+          <Navigation className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Distance: <strong>{stop.distance_km} km</strong></span>
         </div>
       </div>
 
-      {/* Action Buttons & Status */}
-      <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/60">
-        <div>{getStatusBadge()}</div>
-
-        <div className="flex items-center gap-1.5">
+      {/* Actions & Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+        <div className="flex items-center gap-1">
+          {/* AI Explanation Button */}
           <button
             onClick={() => onExplainRisk(stop.patient_id)}
-            className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-colors border border-indigo-500/20 text-xs flex items-center gap-1"
-            title="Explain AI Priority"
+            className="px-2.5 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-sky-400 text-xs font-semibold flex items-center gap-1"
           >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden sm:inline">AI Info</span>
+            <Sparkles className="w-3.5 h-3.5" /> AI Rationale
           </button>
 
-          {stop.status !== 'visited' && (
-            <button
-              onClick={() => onStatusChange(stop.stop_id, 'visited')}
-              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors flex items-center gap-1 shadow-sm"
-            >
-              <CheckCircle className="w-3.5 h-3.5" /> Visit
-            </button>
-          )}
+          {/* Text-To-Speech Button */}
+          <button
+            onClick={handleTextToSpeech}
+            className={`p-1.5 rounded-lg border text-xs ${
+              isSpeaking ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 animate-pulse' : 'bg-slate-800 text-slate-400 hover:text-white border-slate-700'
+            }`}
+            title="Read instructions out loud"
+          >
+            <Volume2 className="w-3.5 h-3.5" />
+          </button>
 
-          {stop.status !== 'missed' && (
-            <button
-              onClick={() => onStatusChange(stop.stop_id, 'missed')}
-              className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 text-xs transition-colors"
-            >
-              Missed
-            </button>
-          )}
+          {/* Turn-by-Turn Navigation */}
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${stop.latitude},${stop.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-sky-400 border border-slate-700"
+            title="Open Google Maps Directions"
+          >
+            <Navigation className="w-3.5 h-3.5" />
+          </a>
+        </div>
+
+        {/* Visit Status Toggle */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => onStatusChange(stop.stop_id, isVisited ? 'scheduled' : 'visited')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              isVisited
+                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
+                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" /> {isVisited ? 'Visited' : 'Mark Visited'}
+          </button>
         </div>
       </div>
     </div>

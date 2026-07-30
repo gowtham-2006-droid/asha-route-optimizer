@@ -1,160 +1,172 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
-
-// Fix Leaflet marker icons default asset paths
-delete L.Icon.Default.prototype._getIconUrl;
-
-const createCustomIcon = (color, text = '') => {
-  return L.divIcon({
-    className: 'custom-leaflet-marker',
-    html: `
-      <div style="
-        background-color: ${color};
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: 3px solid #ffffff;
-        box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 12px;
-        font-family: sans-serif;
-      ">
-        ${text}
-      </div>
-    `,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -16]
-  });
-};
-
-const workerIcon = L.divIcon({
-  className: 'worker-leaflet-marker',
-  html: `
-    <div style="
-      background: linear-gradient(135deg, #0284c7, #4f46e5);
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: 3px solid #ffffff;
-      box-shadow: 0 0 14px rgba(2,132,199,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 18px;
-    ">
-      👩‍⚕️
-    </div>
-  `,
-  iconSize: [38, 38],
-  iconAnchor: [19, 19]
-});
-
-// Auto-center map helper
-function RecenterMap({ center }) {
-  const map = useMap();
-  React.useEffect(() => {
-    if (center) map.setView(center, 14);
-  }, [center, map]);
-  return null;
-}
+import 'leaflet/dist/leaflet.css';
+import { Sparkles, MapPin, Navigation } from 'lucide-react';
 
 export default function RouteMap({ stops, workerLocation, onExplainRisk }) {
-  const defaultCenter = [17.3980, 78.5420];
-  const center = workerLocation ? [workerLocation.latitude, workerLocation.longitude] : defaultCenter;
+  const mapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const layerGroupRef = useRef(null);
 
-  const getMarkerColor = (stop) => {
-    if (stop.is_emergency) return '#dc2626'; // Bright Red
-    switch (stop.risk_band?.toLowerCase()) {
-      case 'critical': return '#ef4444';
-      case 'high': return '#f97316';
-      case 'moderate': return '#eab308';
-      case 'low': default: return '#22c55e';
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    if (!mapInstanceRef.current) {
+      // Initialize Leaflet map centered at Ramanthapur, Hyderabad
+      const initialLat = workerLocation?.latitude || 17.3980;
+      const initialLng = workerLocation?.longitude || 78.5400;
+
+      const map = L.map(mapContainerRef.current, {
+        zoomControl: true,
+        scrollWheelZoom: true
+      }).setView([initialLat, initialLng], 14);
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 19
+      }).addTo(map);
+
+      layerGroupRef.current = L.layerGroup().addTo(map);
+      mapInstanceRef.current = map;
     }
-  };
 
-  // Generate polyline positions
-  const polylinePositions = [
-    [center[0], center[1]],
-    ...stops.map(s => [s.latitude, s.longitude])
-  ];
+    const map = mapInstanceRef.current;
+    const layerGroup = layerGroupRef.current;
+    layerGroup.clearLayers();
+
+    const boundsPoints = [];
+
+    // 1. Worker Location Marker
+    if (workerLocation) {
+      const workerPos = [workerLocation.latitude, workerLocation.longitude];
+      boundsPoints.push(workerPos);
+
+      const workerIcon = L.divIcon({
+        className: 'custom-leaflet-marker',
+        html: `
+          <div class="relative flex items-center justify-center w-10 h-10 bg-sky-600 rounded-full border-2 border-white shadow-xl shadow-sky-500/50">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-40"></span>
+            <span class="text-white text-xs font-bold">ASHA</span>
+          </div>
+        `,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+      });
+
+      L.marker(workerPos, { icon: workerIcon })
+        .addTo(layerGroup)
+        .bindPopup(`
+          <div class="p-2 text-xs font-sans">
+            <strong class="text-slate-900 block font-bold">ASHA Worker: Lakshmi Devi</strong>
+            <span class="text-slate-500 text-[10px]">Sector: Ramanthapur Hub</span>
+          </div>
+        `);
+    }
+
+    // 2. Patient Route Sequence Markers
+    const activeStops = stops.filter(s => s.status !== 'visited');
+    const polylineCoords = [];
+
+    if (workerLocation) {
+      polylineCoords.push([workerLocation.latitude, workerLocation.longitude]);
+    }
+
+    activeStops.forEach((stop) => {
+      const pos = [stop.latitude, stop.longitude];
+      polylineCoords.push(pos);
+      boundsPoints.push(pos);
+
+      let colorClass = 'bg-emerald-500 shadow-emerald-500/50';
+      let borderClass = 'border-emerald-400';
+      if (stop.risk_band === 'Critical') {
+        colorClass = 'bg-red-600 shadow-red-600/60 animate-bounce';
+        borderClass = 'border-red-400';
+      } else if (stop.risk_band === 'High') {
+        colorClass = 'bg-amber-500 shadow-amber-500/50';
+        borderClass = 'border-amber-400';
+      } else if (stop.risk_band === 'Moderate') {
+        colorClass = 'bg-yellow-500 shadow-yellow-500/50';
+        borderClass = 'border-yellow-300';
+      }
+
+      const markerIcon = L.divIcon({
+        className: 'custom-leaflet-marker',
+        html: `
+          <div class="relative flex items-center justify-center w-8 h-8 ${colorClass} rounded-full border-2 ${borderClass} shadow-lg text-white text-xs font-extrabold">
+            ${stop.is_emergency ? '🚨' : `#${stop.sequence}`}
+          </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+
+      const popupContent = document.createElement('div');
+      popupContent.className = 'p-2 text-xs font-sans space-y-1';
+      popupContent.innerHTML = `
+        <div class="flex items-center justify-between gap-2 border-b pb-1">
+          <strong class="text-slate-900 font-bold">${stop.patient_name}</strong>
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${
+            stop.risk_band === 'Critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+          }">${stop.risk_band} (${stop.risk_score})</span>
+        </div>
+        <div class="text-[11px] text-slate-600">
+          📍 ${stop.village}<br/>
+          ⏰ ETA: <strong>${stop.estimated_arrival}</strong> (${stop.distance_km} km)
+        </div>
+        <div class="pt-1 flex gap-1">
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${stop.latitude},${stop.longitude}" target="_blank" class="px-2 py-1 bg-sky-600 text-white rounded text-[10px] font-bold text-center block w-full">
+            🗺️ Open Google Maps
+          </a>
+        </div>
+      `;
+
+      L.marker(pos, { icon: markerIcon })
+        .addTo(layerGroup)
+        .bindPopup(popupContent);
+    });
+
+    // 3. Draw Correct Route Polyline Sequence
+    if (polylineCoords.length > 1) {
+      L.polyline(polylineCoords, {
+        color: '#0284c7', // Sky-600
+        weight: 4,
+        opacity: 0.8,
+        dashArray: '8, 8',
+        lineJoin: 'round'
+      }).addTo(layerGroup);
+    }
+
+    // 4. Auto-Fit Bounds so route and markers are perfectly framed
+    if (boundsPoints.length > 0) {
+      map.fitBounds(boundsPoints, { padding: [40, 40], maxZoom: 16 });
+    }
+
+  }, [stops, workerLocation]);
 
   return (
-    <div className="w-full h-full min-h-[400px] rounded-2xl overflow-hidden border border-slate-800 relative shadow-xl">
-      <MapContainer
-        center={center}
-        zoom={14}
-        scrollWheelZoom={true}
-        className="w-full h-full z-10 bg-slate-950"
-      >
-        <RecenterMap center={center} />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+    <div className="relative w-full h-full min-h-[450px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl glass-card">
+      <div ref={mapContainerRef} className="w-full h-full z-10" />
 
-        {/* Route Polyline */}
-        <Polyline
-          positions={polylinePositions}
-          pathOptions={{
-            color: '#38bdf8',
-            weight: 4,
-            dashArray: '8, 8',
-            opacity: 0.85
-          }}
-        />
-
-        {/* Worker Position */}
-        {workerLocation && (
-          <Marker position={[workerLocation.latitude, workerLocation.longitude]} icon={workerIcon}>
-            <Popup className="custom-popup">
-              <div className="p-1 font-sans">
-                <p className="font-bold text-slate-900">ASHA Worker: Lakshmi Devi</p>
-                <p className="text-xs text-slate-600">Current GPS Position</p>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-
-        {/* Patient Stop Markers */}
-        {stops.map((stop) => (
-          <Marker
-            key={stop.stop_id || stop.patient_id}
-            position={[stop.latitude, stop.longitude]}
-            icon={createCustomIcon(getMarkerColor(stop), stop.is_emergency ? '🚨' : stop.sequence)}
-          >
-            <Popup className="custom-popup">
-              <div className="p-2 font-sans max-w-xs">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <h4 className="font-bold text-slate-900 text-sm">{stop.patient_name}</h4>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded text-white ${
-                    stop.is_emergency ? 'bg-red-600' : 'bg-sky-600'
-                  }`}>
-                    {stop.is_emergency ? 'EMERGENCY' : `Stop #${stop.sequence}`}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600 mb-1">{stop.village}</p>
-                <div className="flex items-center justify-between text-xs text-slate-700 bg-slate-100 p-1.5 rounded mb-2">
-                  <span>Risk Score: <strong>{stop.risk_score}/100</strong> ({stop.risk_band})</span>
-                  <span>ETA: <strong>{stop.estimated_arrival}</strong></span>
-                </div>
-                <button
-                  onClick={() => onExplainRisk(stop.patient_id)}
-                  className="w-full text-center py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-semibold"
-                >
-                  AI Risk Explanation ✨
-                </button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+      {/* Map Legend Overlay */}
+      <div className="absolute bottom-4 left-4 z-20 bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-800 text-[11px] text-slate-300 space-y-1.5 shadow-xl">
+        <span className="font-bold text-white text-xs block mb-1">Route Legend</span>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-sky-600 border border-white" />
+          <span>ASHA Start Location</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-red-600 border border-white" />
+          <span>🔴 Stop #1 Critical Risk</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-amber-500 border border-white" />
+          <span>🟠 High Urgency</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-emerald-500 border border-white" />
+          <span>🟢 Moderate / Low</span>
+        </div>
+      </div>
     </div>
   );
 }
