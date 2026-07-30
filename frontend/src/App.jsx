@@ -96,7 +96,7 @@ export default function App() {
   const handleLoginSuccess = (userProfile) => {
     setCurrentUser(userProfile);
     setActiveRole(userProfile.role);
-    setActiveTab(userProfile.role === 'asha_worker' ? 'route' : 'supervisor_tracking');
+    setActiveTab(userProfile.role === 'asha_worker' ? 'route' : 'supervisor');
     showToast(`Welcome ${userProfile.name}! Entered ${userProfile.role === 'asha_worker' ? 'ASHA Worker Portal' : 'PHC Supervisor Command Center'}.`, 'success');
   };
 
@@ -275,7 +275,7 @@ export default function App() {
             <BreadcrumbItem>PHC Ramanthapur</BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem isCurrent>
-              {activeRole === 'supervisor' ? 'Supervisor Portal' : (activeTab === 'route' ? "Today's Route" : "Patient Directory")}
+              {activeRole === 'supervisor' ? 'Supervisor Command Center' : (activeTab === 'route' ? "Today's Route" : "Patient Directory")}
             </BreadcrumbItem>
           </Breadcrumb>
 
@@ -290,14 +290,14 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main View Container (Distinct per Portal) */}
+      {/* Main View Container (Strictly Role-Based) */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
         {activeRole === 'asha_worker' ? (
           /* ASHA FIELD WORKER DEDICATED PORTAL */
           <div className="space-y-6">
             {activeTab === 'route' ? (
               <div className="space-y-6">
-                {/* Worker Summary Banner with Clean Today Date Badge */}
+                {/* Worker Summary Banner */}
                 <div className="p-4 sm:p-6 rounded-3xl glass-panel flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -396,13 +396,10 @@ export default function App() {
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        activeRole={activeRole}
         activeTab={activeTab}
         onSelectTab={(tab) => {
-          if (tab === 'supervisor') {
-            setActiveRole('supervisor');
-            setActiveTab('supervisor_tracking');
-          } else {
-            setActiveRole('asha_worker');
+          if (activeRole === 'asha_worker') {
             setActiveTab(tab);
           }
         }}

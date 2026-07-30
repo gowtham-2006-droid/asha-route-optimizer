@@ -5,13 +5,12 @@ export function Sidebar({ isOpen, onClose, activeRole, activeTab, onSelectTab })
   if (!isOpen) return null;
 
   const workerNavItems = [
-    { id: 'route', label: "Today's Route & Map", icon: <Navigation className="w-4 h-4 text-sky-400" /> },
+    { id: 'route', label: "My Route & Map", icon: <Navigation className="w-4 h-4 text-sky-400" /> },
     { id: 'patients', label: 'Patient Directory', icon: <UserCheck className="w-4 h-4 text-indigo-400" /> },
   ];
 
   const supervisorNavItems = [
-    { id: 'supervisor_tracking', label: 'All Worker Field Routes', icon: <Navigation className="w-4 h-4 text-indigo-400" /> },
-    { id: 'supervisor_analytics', label: 'Catchment Analytics & KPIs', icon: <FileText className="w-4 h-4 text-amber-400" /> },
+    { id: 'supervisor', label: 'PHC Supervisor Command Center', icon: <Shield className="w-4 h-4 text-indigo-400" /> },
   ];
 
   const currentNavItems = activeRole === 'supervisor' ? supervisorNavItems : workerNavItems;
@@ -50,7 +49,7 @@ export function Sidebar({ isOpen, onClose, activeRole, activeTab, onSelectTab })
                 onClose();
               }}
               className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === item.id
+                activeTab === item.id || (activeRole === 'supervisor' && item.id === 'supervisor')
                   ? (activeRole === 'supervisor' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-sky-600 text-white shadow-lg shadow-sky-600/30')
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
               }`}
