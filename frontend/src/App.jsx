@@ -11,7 +11,17 @@ import RegisterPatientModal from './components/RegisterPatientModal';
 import PatientDetailModal from './components/PatientDetailModal';
 import PhoneOTPLogin from './components/PhoneOTPLogin';
 import { MOCK_WORKER, MOCK_ROUTE_STOPS, MOCK_PATIENTS } from './services/mockData';
-import { MapPin, Navigation, Clock, CheckCircle2, AlertOctagon, UserCheck } from 'lucide-react';
+
+// Custom UI Components
+import { Breadcrumb, BreadcrumbItem, BreadcrumbSeparator } from './components/ui/breadcrumb';
+import { Calendar } from './components/ui/calendar';
+import { Drawer, DrawerHeader, DrawerTitle, DrawerDescription, DrawerContent, DrawerFooter, DrawerClose } from './components/ui/drawer';
+import { CommandDialog, CommandInput, CommandList, CommandGroup, CommandItem, CommandEmpty } from './components/ui/command';
+import { Pagination } from './components/ui/pagination';
+import { Sidebar } from './components/ui/sidebar';
+import RiskBadge from './components/RiskBadge';
+
+import { MapPin, Navigation, Clock, CheckCircle2, AlertOctagon, UserCheck, Search, Sparkles, Home } from 'lucide-react';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -21,8 +31,16 @@ export default function App() {
 
   const [activeRole, setActiveRole] = useState(() => currentUser?.role || 'asha_worker');
   const [activeTab, setActiveTab] = useState('route');
+  const [selectedDate, setSelectedDate] = useState(30);
+
   const [patients, setPatients] = useState(MOCK_PATIENTS);
   const [stops, setStops] = useState(MOCK_ROUTE_STOPS);
+
+  // UI Drawer & Modal States
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerPatient, setDrawerPatient] = useState(null);
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
 
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [explainPatientId, setExplainPatientId] = useState(null);
@@ -37,6 +55,18 @@ export default function App() {
       setActiveRole(currentUser.role);
     }
   }, [currentUser]);
+
+  // Keyboard shortcut Ctrl+K for Command Palette
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const showToast = (msg, type = 'info') => {
     setNotification({ msg, type });
@@ -112,11 +142,9 @@ export default function App() {
     showToast(`Patient ${newPatient.name} registered. Risk Score: ${newPatient.risk_score} (${newPatient.risk_band})`, 'success');
   };
 
-  // Bulk CSV Batch Ingestion Handler
   const handleBatchImport = (importedPatients) => {
     setPatients(prev => [...importedPatients, ...prev]);
 
-    // Insert high risk imported patients onto map route
     const newStops = importedPatients.map((p, idx) => ({
       sequence: idx + 1,
       stop_id: `stp_csv_${Date.now()}_${idx}`,
@@ -179,6 +207,12 @@ export default function App() {
     showToast("Route sequence reset to initial baseline schedule", "info");
   };
 
+  const openRightDrawer = (patientId) => {
+    const p = patients.find(pat => pat.patient_id === patientId) || patients[0];
+    setDrawerPatient(p);
+    setIsDrawerOpen(true);
+  };
+
   if (!currentUser) {
     return <PhoneOTPLogin onLoginSuccess={handleLoginSuccess} />;
   }
@@ -202,45 +236,49 @@ export default function App() {
         </div>
       )}
 
+      {/* Header */}
       <Navbar
         activeRole={activeRole}
         setActiveRole={setActiveRole}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
         currentUser={currentUser}
         onLogout={handleLogout}
         onTriggerEmergency={() => setIsEmergencyOpen(true)}
         onResetRoute={handleResetRoute}
+        onOpenSidebar={() => setIsSidebarOpen(true)}
       />
 
+      {/* Sub-Header Breadcrumb & Command Bar */}
+      <div className="bg-slate-900/40 border-b border-slate-800/80 px-4 py-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs">
+          <Breadcrumb>
+            <BreadcrumbItem><Home className="w-3.5 h-3.5 text-slate-400" /> Home</BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>PHC Ramanthapur</BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem isCurrent>{activeTab === 'route' ? "Today's Route" : activeTab === 'patients' ? "Patient Directory" : "Supervisor"}</BreadcrumbItem>
+          </Breadcrumb>
+
+          <button
+            onClick={() => setIsCommandOpen(true)}
+            className="flex items-center gap-2 px-3 py-1 bg-slate-900 rounded-xl border border-slate-800 text-[11px] text-slate-400 hover:text-white transition-colors"
+          >
+            <Search className="w-3 h-3 text-sky-400" />
+            <span>Search Command Palette...</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 font-mono text-[9px]">Ctrl+K</kbd>
+          </button>
+        </div>
+      </div>
+
+      {/* Main View Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
         {activeRole === 'asha_worker' ? (
           <div className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-              <button
-                onClick={() => setActiveTab('route')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                  activeTab === 'route'
-                    ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30'
-                    : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
-                }`}
-              >
-                <Navigation className="w-4 h-4" /> Today's Route & Map
-              </button>
-
-              <button
-                onClick={() => setActiveTab('patients')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                  activeTab === 'patients'
-                    ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30'
-                    : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
-                }`}
-              >
-                <UserCheck className="w-4 h-4" /> Patient Directory & Risk Simulator
-              </button>
-            </div>
-
             {activeTab === 'route' ? (
               <div className="space-y-6">
-                <div className="p-4 sm:p-6 rounded-3xl glass-panel flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                {/* Worker Summary & Date Selector */}
+                <div className="p-4 sm:p-6 rounded-3xl glass-panel flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <h2 className="text-xl font-bold text-white">Today's Optimized Route</h2>
@@ -254,36 +292,34 @@ export default function App() {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="flex-1 md:flex-none px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Total Distance</span>
-                      <span className="text-sm font-bold text-sky-400 flex items-center justify-center gap-1">
-                        <Navigation className="w-3.5 h-3.5" /> {totalKm} km
-                      </span>
-                    </div>
+                  {/* Route Date Calendar Selector & Metrics */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
+                    <Calendar selectedDate={selectedDate} onSelectDate={(d) => { setSelectedDate(d); showToast(`Loaded schedule for July ${d}, 2026`, 'info'); }} />
 
-                    <div className="flex-1 md:flex-none px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Est. Duration</span>
-                      <span className="text-sm font-bold text-indigo-400 flex items-center justify-center gap-1">
-                        <Clock className="w-3.5 h-3.5" /> 3h 30m
-                      </span>
-                    </div>
+                    <div className="grid grid-cols-3 gap-2 w-full sm:w-auto">
+                      <div className="px-3 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
+                        <span className="text-[9px] text-slate-500 block uppercase font-bold">Distance</span>
+                        <span className="text-xs font-bold text-sky-400">{totalKm} km</span>
+                      </div>
 
-                    <div className="flex-1 md:flex-none px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Progress</span>
-                      <span className="text-sm font-bold text-emerald-400 flex items-center justify-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> {completedCount}/{stops.length}
-                      </span>
+                      <div className="px-3 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
+                        <span className="text-[9px] text-slate-500 block uppercase font-bold">Duration</span>
+                        <span className="text-xs font-bold text-indigo-400">3h 30m</span>
+                      </div>
+
+                      <div className="px-3 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
+                        <span className="text-[9px] text-slate-500 block uppercase font-bold">Visited</span>
+                        <span className="text-xs font-bold text-emerald-400">{completedCount}/{stops.length}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
+                {/* Split Screen: Left Route List, Right Interactive Map */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   <div className="lg:col-span-5 space-y-3">
                     <div className="flex items-center justify-between px-1">
-                      <h3 className="font-bold text-slate-200 text-sm flex items-center gap-2">
-                        Sequence Stops ({stops.length})
-                      </h3>
+                      <h3 className="font-bold text-slate-200 text-sm">Sequence Stops ({stops.length})</h3>
                       <span className="text-xs text-slate-400">Risk Priority Ordered</span>
                     </div>
 
@@ -293,7 +329,7 @@ export default function App() {
                           key={stop.stop_id}
                           stop={stop}
                           onStatusChange={handleStatusChange}
-                          onExplainRisk={(pid) => setExplainPatientId(pid)}
+                          onExplainRisk={(pid) => openRightDrawer(pid)}
                         />
                       ))}
                     </div>
@@ -303,19 +339,22 @@ export default function App() {
                     <RouteMap
                       stops={stops}
                       workerLocation={MOCK_WORKER.current_location}
-                      onExplainRisk={(pid) => setExplainPatientId(pid)}
+                      onExplainRisk={(pid) => openRightDrawer(pid)}
                     />
                   </div>
                 </div>
               </div>
             ) : (
-              <PatientManagement
-                patients={patients}
-                onUpdatePatient={handleUpdatePatient}
-                onSelectPatient={(p) => setSelectedPatientDetail(p)}
-                onRegisterNewPatient={() => setIsRegisterOpen(true)}
-                onBatchImport={handleBatchImport}
-              />
+              <div className="space-y-4">
+                <PatientManagement
+                  patients={patients}
+                  onUpdatePatient={handleUpdatePatient}
+                  onSelectPatient={(p) => openRightDrawer(p.patient_id)}
+                  onRegisterNewPatient={() => setIsRegisterOpen(true)}
+                  onBatchImport={handleBatchImport}
+                />
+                <Pagination currentPage={1} totalPages={3} onPageChange={(p) => showToast(`Page ${p} loaded`, 'info')} />
+              </div>
             )}
           </div>
         ) : (
@@ -327,6 +366,78 @@ export default function App() {
         Idea2Impact 2026 — ASHA Route Optimizer AI • Built with React, FastAPI, OR-Tools & Gemini
       </footer>
 
+      {/* Main Navigation Sidebar Drawer */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        activeTab={activeTab}
+        onSelectTab={(tab) => {
+          if (tab === 'supervisor') setActiveRole('supervisor');
+          else {
+            setActiveRole('asha_worker');
+            setActiveTab(tab);
+          }
+        }}
+      />
+
+      {/* Patient Clinical Details Slide-Over Drawer (Right-Side Drawer) */}
+      <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+        {drawerPatient && (
+          <>
+            <DrawerHeader>
+              <div className="flex items-center justify-between mb-1">
+                <DrawerTitle>{drawerPatient.name}</DrawerTitle>
+                <RiskBadge band={drawerPatient.risk_band} score={drawerPatient.risk_score} />
+              </div>
+              <DrawerDescription>
+                {drawerPatient.patient_id} • Village: {drawerPatient.village} • Age {drawerPatient.age}
+              </DrawerDescription>
+            </DrawerHeader>
+
+            <DrawerContent>
+              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 text-xs">
+                <span className="text-slate-500 font-bold uppercase block text-[10px]">Maternal & Clinical Flags</span>
+                <p className="text-slate-200 font-semibold">
+                  {drawerPatient.is_pregnant ? `Pregnant — Trimester ${drawerPatient.trimester}` : 'General Health Checkup'}
+                </p>
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {drawerPatient.chronic_disease_flags?.map(f => (
+                    <span key={f} className="px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-semibold uppercase text-[10px]">{f}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-3 bg-indigo-950/20 border border-indigo-900/50 rounded-2xl text-xs space-y-1.5 text-indigo-100">
+                <span className="font-bold flex items-center gap-1 text-indigo-400 uppercase text-[10px]"><Sparkles className="w-3.5 h-3.5" /> Gemini Priority Rationale</span>
+                <p>Prioritized due to 3rd trimester pregnancy combined with overdue ANC visit schedule. Blood pressure and fetal heart rate checkup recommended.</p>
+              </div>
+            </DrawerContent>
+
+            <DrawerFooter>
+              <DrawerClose onClick={() => setIsDrawerOpen(false)} />
+            </DrawerFooter>
+          </>
+        )}
+      </Drawer>
+
+      {/* Command Palette Dialog */}
+      <CommandDialog isOpen={isCommandOpen} onClose={() => setIsCommandOpen(false)}>
+        <CommandInput placeholder="Search patients, workers, or commands..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Quick Navigation">
+            <CommandItem onSelect={() => { setActiveTab('route'); setIsCommandOpen(false); }}>Today's Route & Map</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('patients'); setIsCommandOpen(false); }}>Patient Directory & Risk Simulator</CommandItem>
+            <CommandItem onSelect={() => { setActiveRole('supervisor'); setIsCommandOpen(false); }}>Supervisor Command Center</CommandItem>
+          </CommandGroup>
+          <CommandGroup heading="Actions">
+            <CommandItem onSelect={() => { setIsEmergencyOpen(true); setIsCommandOpen(false); }}>🚨 Emergency Trigger</CommandItem>
+            <CommandItem onSelect={() => { setIsRegisterOpen(true); setIsCommandOpen(false); }}>Register New Patient</CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+
+      {/* Modals */}
       <EmergencyModal
         isOpen={isEmergencyOpen}
         onClose={() => setIsEmergencyOpen(false)}
