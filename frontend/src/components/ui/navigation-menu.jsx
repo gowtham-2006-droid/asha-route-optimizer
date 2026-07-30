@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Navigation, Users, Activity, Sparkles, MapPin } from 'lucide-react';
+import { Bell, Navigation, Users } from 'lucide-react';
 
 export function NavigationMenu({ activeRole, activeTab, onSelectTab, className = '' }) {
   const [isNotifyOpen, setIsNotifyOpen] = useState(false);
@@ -12,50 +12,30 @@ export function NavigationMenu({ activeRole, activeTab, onSelectTab, className =
 
   return (
     <div className={`flex items-center justify-between gap-3 w-full ${className}`}>
-      {/* Dynamic Role-Based Top Navigation Tabs */}
-      <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-        {activeRole === 'asha_worker' ? (
-          <>
-            <button
-              onClick={() => onSelectTab && onSelectTab('route')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                activeTab === 'route' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Navigation className="w-3.5 h-3.5" /> My Route & Map
-            </button>
+      {/* Top Navigation Tabs for Worker Role (Hidden/Clean for Supervisor Role) */}
+      {activeRole === 'asha_worker' ? (
+        <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <button
+            onClick={() => onSelectTab && onSelectTab('route')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === 'route' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Navigation className="w-3.5 h-3.5" /> My Route & Map
+          </button>
 
-            <button
-              onClick={() => onSelectTab && onSelectTab('patients')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                activeTab === 'patients' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Users className="w-3.5 h-3.5" /> Patient Directory
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              onClick={() => onSelectTab && onSelectTab('supervisor_tracking')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                activeTab === 'supervisor_tracking' || activeTab === 'route' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Navigation className="w-3.5 h-3.5" /> All Worker Routes
-            </button>
-
-            <button
-              onClick={() => onSelectTab && onSelectTab('supervisor_analytics')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                activeTab === 'supervisor_analytics' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5" /> Catchment Analytics
-            </button>
-          </>
-        )}
-      </div>
+          <button
+            onClick={() => onSelectTab && onSelectTab('patients')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === 'patients' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" /> Patient Directory
+          </button>
+        </div>
+      ) : (
+        <div className="flex-1" /> // Empty placeholder for clean supervisor top bar
+      )}
 
       {/* Notification Bell */}
       <div className="relative">
