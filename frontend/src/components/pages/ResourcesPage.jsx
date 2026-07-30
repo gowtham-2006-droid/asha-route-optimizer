@@ -4,7 +4,7 @@ import {
   GraduationCap, Folder, Settings, Bell, Search, Filter, Download, Eye,
   MoreVertical, HeartPulse, Navigation, Bot, Sparkles, ChevronRight,
   BookOpen, Baby, ShieldCheck, Droplets, Megaphone, FileCheck, CheckCircle2,
-  Video, Image, ArrowRight, Check, Share2
+  Video, Image, ArrowRight, Check, Share2, BarChart3, UserCheck
 } from 'lucide-react';
 
 export default function ResourcesPage({
@@ -65,8 +65,11 @@ export default function ResourcesPage({
             <button onClick={() => onNavigateToTab('patients')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
               <Users className="w-4 h-4" /><span>Patients</span>
             </button>
-            <button onClick={onRegisterNewPatient} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
+            <button onClick={() => onNavigateToTab('add_patient')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
               <Plus className="w-4 h-4" /><span>Add Patient</span>
+            </button>
+            <button onClick={() => onNavigateToTab('next_patient')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
+              <UserCheck className="w-4 h-4" /><span>Next Patient</span>
             </button>
             <button onClick={onTriggerEmergency} className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-red-600 hover:bg-red-50 transition-all font-bold">
               <div className="flex items-center gap-3"><AlertOctagon className="w-4 h-4" /><span>Emergency</span></div>
@@ -74,6 +77,9 @@ export default function ResourcesPage({
             </button>
             <button onClick={() => onNavigateToTab('reports')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
               <FileText className="w-4 h-4" /><span>Reports</span>
+            </button>
+            <button onClick={() => onNavigateToTab('analytics')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
+              <BarChart3 className="w-4 h-4" /><span>Analytics</span>
             </button>
             <button onClick={() => onNavigateToTab('messages')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
               <MessageSquare className="w-4 h-4" /><span>Messages</span>

@@ -9,6 +9,7 @@ import MessagesPage from './components/pages/MessagesPage';
 import TrainingPage from './components/pages/TrainingPage';
 import ResourcesPage from './components/pages/ResourcesPage';
 import SettingsPage from './components/pages/SettingsPage';
+import AnalyticsPage from './components/pages/AnalyticsPage';
 
 import EmergencyModal from './components/EmergencyModal';
 import AIExplanationModal from './components/AIExplanationModal';
@@ -296,6 +297,25 @@ export default function App() {
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
             />
+          ) : activeTab === 'analytics' ? (
+            <AnalyticsPage
+              currentUser={currentUser}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+              onTriggerEmergency={() => setActiveTab('emergency')}
+              onRegisterNewPatient={() => setActiveTab('add_patient')}
+            />
+          ) : activeTab === 'next_patient' ? (
+            /* Next Patient just navigates to Route page with focus on next stop */
+            <MyRoutePage
+              stops={stops}
+              workerLocation={MOCK_WORKER.current_location}
+              currentUser={currentUser}
+              onStatusChange={handleStatusChange}
+              onExplainRisk={(pid) => openRightDrawer(pid)}
+              onTriggerEmergency={() => setActiveTab('emergency')}
+              onRegisterNewPatient={() => setActiveTab('add_patient')}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+            />
           ) : (
             <AshaCompanionDashboard
               stops={stops}
@@ -365,6 +385,12 @@ export default function App() {
             <CommandItem onSelect={() => { setActiveTab('patients'); setIsCommandOpen(false); }}>Patient Directory</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('add_patient'); setIsCommandOpen(false); }}>Add Patient</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('emergency'); setIsCommandOpen(false); }}>Emergency Dispatch</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('reports'); setIsCommandOpen(false); }}>Reports</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('analytics'); setIsCommandOpen(false); }}>Analytics</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('messages'); setIsCommandOpen(false); }}>Messages</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('training'); setIsCommandOpen(false); }}>Training</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('resources'); setIsCommandOpen(false); }}>Resources</CommandItem>
+            <CommandItem onSelect={() => { setActiveTab('settings'); setIsCommandOpen(false); }}>Settings</CommandItem>
           </CommandGroup>
           <CommandGroup heading="Actions">
             <CommandItem onSelect={() => { setActiveTab('emergency'); setIsCommandOpen(false); }}>🚨 Emergency Trigger</CommandItem>

@@ -2,7 +2,8 @@ import React from 'react';
 import {
   Home, MapPin, Users, Plus, AlertOctagon, FileText, MessageSquare,
   GraduationCap, Folder, Settings, Bell, Clock, ChevronRight, CheckCircle2,
-  AlertTriangle, HeartPulse, Navigation, ArrowRight, Activity, Sparkles, UserCheck
+  AlertTriangle, HeartPulse, Navigation, ArrowRight, Activity, Sparkles, UserCheck,
+  BarChart3
 } from 'lucide-react';
 import RouteMap from './RouteMap';
 
@@ -98,6 +99,14 @@ export default function AshaCompanionDashboard({
             </button>
 
             <button
+              onClick={() => onNavigateToTab && onNavigateToTab('next_patient')}
+              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all"
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>Next Patient</span>
+            </button>
+
+            <button
               onClick={onTriggerEmergency}
               className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-red-600 hover:bg-red-50 transition-all font-bold"
             >
@@ -120,6 +129,18 @@ export default function AshaCompanionDashboard({
             >
               <FileText className="w-4 h-4" />
               <span>Reports</span>
+            </button>
+
+            <button
+              onClick={() => onNavigateToTab && onNavigateToTab('analytics')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition-all ${
+                activeTab === 'analytics'
+                  ? 'bg-[#6c47ff] text-white font-bold shadow-md shadow-purple-600/25'
+                  : 'hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span>Analytics</span>
             </button>
 
             <button

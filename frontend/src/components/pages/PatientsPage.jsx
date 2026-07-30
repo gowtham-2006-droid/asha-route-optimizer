@@ -3,7 +3,8 @@ import {
   Home, MapPin, Users, Plus, AlertOctagon, FileText, MessageSquare,
   GraduationCap, Folder, Settings, Bell, Search, Download, ChevronLeft,
   ChevronRight, MoreVertical, HeartPulse, Navigation, CheckCircle2,
-  Activity, Baby, Syringe, Sparkles, Filter, ChevronDown, LayoutList, LayoutGrid
+  Activity, Baby, Syringe, Sparkles, Filter, ChevronDown, LayoutList, LayoutGrid,
+  BarChart3, UserCheck
 } from 'lucide-react';
 
 export default function PatientsPage({
@@ -84,8 +85,11 @@ export default function PatientsPage({
             <button onClick={() => onNavigateToTab('patients')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-[#6c47ff] text-white font-bold shadow-md shadow-purple-600/25 transition-all">
               <Users className="w-4 h-4" /><span>Patients</span>
             </button>
-            <button onClick={onRegisterNewPatient} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
+            <button onClick={() => onNavigateToTab('add_patient')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
               <Plus className="w-4 h-4" /><span>Add Patient</span>
+            </button>
+            <button onClick={() => onNavigateToTab('next_patient')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
+              <UserCheck className="w-4 h-4" /><span>Next Patient</span>
             </button>
             <button onClick={onTriggerEmergency} className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-red-600 hover:bg-red-50 transition-all font-bold">
               <div className="flex items-center gap-3"><AlertOctagon className="w-4 h-4" /><span>Emergency</span></div>
@@ -93,6 +97,9 @@ export default function PatientsPage({
             </button>
             <button onClick={() => onNavigateToTab('reports')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
               <FileText className="w-4 h-4" /><span>Reports</span>
+            </button>
+            <button onClick={() => onNavigateToTab('analytics')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
+              <BarChart3 className="w-4 h-4" /><span>Analytics</span>
             </button>
             <button onClick={() => onNavigateToTab('messages')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
               <MessageSquare className="w-4 h-4" /><span>Messages</span>
@@ -238,7 +245,17 @@ export default function PatientsPage({
               {/* Action Buttons */}
               <div className="flex items-center gap-2 w-full md:w-auto">
                 <button
-                  onClick={onBatchImport}
+                  onClick={() => {
+                    const csvContent = 'Patient ID,Name,Age,Gender,Village,Risk Score,Visit Type,Status\n' + 
+                      mockPatientsList.map(p => `${p.id},${p.name},${p.age},${p.gender},${p.village},${p.risk_score},${p.visit_type},${p.status}`).join('\n');
+                    const blob = new Blob([csvContent], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'patients_export.csv';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
                   className="px-4 py-2 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs"
                 >
                   <Download className="w-4 h-4 text-purple-600" /> Export
