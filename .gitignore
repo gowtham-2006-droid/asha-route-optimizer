@@ -1,0 +1,26 @@
+# Node dependencies & build outputs
+node_modules/
+dist/
+dist-ssr/
+
+# Python virtual environment & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+
+# Environment secrets
+.env
+.env.local
+.env.development
+.env.production
+
+# IDE & System files
+.vscode/
+.idea/
+.DS_Store
+*.log

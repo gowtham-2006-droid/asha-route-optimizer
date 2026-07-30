@@ -1,0 +1,112 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ASHA Route Optimizer AI API",
+    "version": "1.0.0",
+    "description": "API Specification for ASHA Route Optimizer AI"
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "V1 REST API Base Gateway"
+    }
+  ],
+  "paths": {
+    "/auth/request-otp": {
+      "post": {
+        "summary": "Request OTP for authentication",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["phone"],
+                "properties": {
+                  "phone": { "type": "string", "example": "+919876543210" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OTP sent successfully" }
+        }
+      }
+    },
+    "/auth/verify-otp": {
+      "post": {
+        "summary": "Verify OTP and obtain JWT access token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["phone", "otp"],
+                "properties": {
+                  "phone": { "type": "string", "example": "+919876543210" },
+                  "otp": { "type": "string", "example": "123456" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Token issued" },
+          "401": { "description": "Invalid OTP" }
+        }
+      }
+    },
+    "/predict-risk": {
+      "post": {
+        "summary": "Predict patient urgency risk score using XGBoost model",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["patient_id", "age", "is_pregnant", "days_overdue"],
+                "properties": {
+                  "patient_id": { "type": "string" },
+                  "age": { "type": "integer" },
+                  "is_pregnant": { "type": "boolean" },
+                  "trimester": { "type": "integer" },
+                  "high_risk_pregnancy": { "type": "boolean" },
+                  "days_overdue": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Risk score calculated" }
+        }
+      }
+    },
+    "/optimize-route": {
+      "post": {
+        "summary": "Optimize worker visit route using OR-Tools VRPTW solver",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["worker_id", "patients"],
+                "properties": {
+                  "worker_id": { "type": "string" },
+                  "patients": { "type": "array", "items": { "type": "object" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Optimized route generated" }
+        }
+      }
+    }
+  }
+}
