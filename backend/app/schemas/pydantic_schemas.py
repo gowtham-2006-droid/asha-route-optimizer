@@ -1,18 +1,28 @@
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, ConfigDict, Field
 
-# Auth Schemas
+# Auth & Token Schemas
 class LoginSchema(BaseModel):
     phone: str = Field(..., example="+919876543210")
     password: str = Field(..., example="password123")
-    role: Optional[str] = "asha_worker"
+    role: Optional[str] = "ASHA Worker"
 
 class RegisterSchema(BaseModel):
     name: str = Field(..., example="Lakshmi Devi")
     phone: str = Field(..., example="+919876543210")
     password: str = Field(..., example="password123")
-    role: str = Field(..., example="asha_worker")
+    role: str = Field(..., example="ASHA Worker") # Admin | Medical Officer | ASHA Worker
     village: Optional[str] = "Ramanthapur"
+
+class RefreshTokenRequestSchema(BaseModel):
+    refresh_token: str = Field(..., example="eyJhbGciOiJIUzI1Ni...")
+
+class TokenSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int = 1800
+    user: Dict[str, Any]
 
 class UserResponseSchema(BaseModel):
     user_id: str

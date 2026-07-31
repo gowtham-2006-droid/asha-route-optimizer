@@ -37,10 +37,11 @@ async function safeApiCall(apiCallFn, fallbackData) {
 
 export const authService = {
   login: async (phone, password, role = 'asha_worker') => {
-    return safeApiCall(
+    const response = await safeApiCall(
       () => apiClient.post('/auth/login', { phone, password, role }),
       {
-        token: `mock_jwt_token_${Date.now()}`,
+        access_token: `mock_jwt_token_${Date.now()}`,
+        refresh_token: `mock_refresh_token_${Date.now()}`,
         user: {
           user_id: role === 'asha_worker' ? 'usr_w101' : 'usr_sup01',
           name: role === 'asha_worker' ? MOCK_WORKER.name : 'Dr. Ramesh Kumar (Medical Officer)',
@@ -50,13 +51,19 @@ export const authService = {
         }
       }
     );
+    if (response.data && response.data.access_token) {
+      localStorage.setItem('asha_jwt_token', response.data.access_token);
+      localStorage.setItem('asha_refresh_token', response.data.refresh_token);
+    }
+    return response;
   },
 
   register: async (userData) => {
-    return safeApiCall(
+    const response = await safeApiCall(
       () => apiClient.post('/auth/register', userData),
       {
-        token: `mock_jwt_token_${Date.now()}`,
+        access_token: `mock_jwt_token_${Date.now()}`,
+        refresh_token: `mock_refresh_token_${Date.now()}`,
         user: {
           user_id: `usr_${Date.now()}`,
           name: userData.name,
@@ -66,6 +73,32 @@ export const authService = {
         }
       }
     );
+    if (response.data && response.data.access_token) {
+      localStorage.setItem('asha_jwt_token', response.data.access_token);
+      localStorage.setItem('asha_refresh_token', response.data.refresh_token);
+    }
+    return response;
+  },
+
+  logout: async () => {
+    localStorage.removeItem('asha_jwt_token');
+    localStorage.removeItem('asha_refresh_token');
+    return safeApiCall(
+      () => apiClient.post('/auth/logout'),
+      { success: true, message: 'Logged out' }
+    );
+  },
+
+  refreshToken: async () => {
+    const refreshToken = localStorage.getItem('asha_refresh_token');
+    const response = await safeApiCall(
+      () => apiClient.post('/auth/refresh', { refresh_token: refreshToken }),
+      { access_token: `refreshed_token_${Date.now()}` }
+    );
+    if (response.data && response.data.access_token) {
+      localStorage.setItem('asha_jwt_token', response.data.access_token);
+    }
+    return response;
   },
 
   getCurrentUser: async () => {
