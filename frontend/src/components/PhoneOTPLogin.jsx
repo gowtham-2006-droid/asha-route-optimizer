@@ -23,11 +23,13 @@ export default function PhoneOTPLogin({ onLoginSuccess }) {
     e.preventDefault();
     setLoading(true);
 
+    let loggedInUser = null;
     try {
-      // Authenticate with live FastAPI backend
-      const res = await authService.verifyOtp(mobileNumber, '123456', selectedRole);
+      // Authenticate with live FastAPI backend (/api/v1/auth/login)
+      const res = await authService.login(mobileNumber, password, selectedRole);
       if (res.data && res.data.token) {
         localStorage.setItem('asha_jwt_token', res.data.token);
+        loggedInUser = res.data.user;
       }
     } catch (err) {
       console.warn("Backend auth notice:", err.message);
@@ -37,9 +39,9 @@ export default function PhoneOTPLogin({ onLoginSuccess }) {
 
     const defaultName = selectedRole === 'asha_worker' ? 'Lakshmi Devi' : 'Dr. Ramesh Kumar (Medical Officer)';
     onLoginSuccess({
-      name: defaultName,
-      role: selectedRole,
-      phone: mobileNumber || (selectedRole === 'asha_worker' ? '+91 98765 43210' : '+91 98765 43299'),
+      name: loggedInUser?.name || defaultName,
+      role: loggedInUser?.role || selectedRole,
+      phone: loggedInUser?.phone || mobileNumber || (selectedRole === 'asha_worker' ? '+91 98765 43210' : '+91 98765 43299'),
       village: selectedRole === 'asha_worker' ? 'Ramanthapur' : 'PHC Ramanthapur Hub'
     });
   };
@@ -52,10 +54,19 @@ export default function PhoneOTPLogin({ onLoginSuccess }) {
     }
     setLoading(true);
 
+    let registeredUser = null;
     try {
-      const res = await authService.verifyOtp(mobileNumber, '123456', selectedRole);
+      // Register with live FastAPI backend (/api/v1/auth/register)
+      const res = await authService.register({
+        name: fullName,
+        phone: mobileNumber,
+        password: password,
+        role: selectedRole,
+        village: village === 'Select your village / area' ? 'Ramanthapur' : village
+      });
       if (res.data && res.data.token) {
         localStorage.setItem('asha_jwt_token', res.data.token);
+        registeredUser = res.data.user;
       }
     } catch (err) {
       console.warn("Backend auth notice:", err.message);
@@ -64,9 +75,9 @@ export default function PhoneOTPLogin({ onLoginSuccess }) {
     }
 
     onLoginSuccess({
-      name: fullName,
-      role: selectedRole,
-      phone: mobileNumber || '+91 98765 43210',
+      name: registeredUser?.name || fullName,
+      role: registeredUser?.role || selectedRole,
+      phone: registeredUser?.phone || mobileNumber || '+91 98765 43210',
       village: village === 'Select your village / area' ? 'Ramanthapur' : village
     });
   };

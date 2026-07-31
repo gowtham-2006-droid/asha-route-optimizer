@@ -24,6 +24,7 @@ class User(Base):
     phone = Column(String(15), unique=True, nullable=False)
     name = Column(String(100), nullable=False)
     role = Column(String(20), nullable=False) # asha_worker, supervisor, admin
+    password_hash = Column(String(255), nullable=True)
     phc_id = Column(String(50), ForeignKey("phcs.id"))
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 

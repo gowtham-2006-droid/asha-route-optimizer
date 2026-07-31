@@ -36,6 +36,51 @@ async function safeApiCall(apiCallFn, fallbackData) {
 }
 
 export const authService = {
+  login: async (phone, password, role = 'asha_worker') => {
+    return safeApiCall(
+      () => apiClient.post('/auth/login', { phone, password, role }),
+      {
+        token: `mock_jwt_token_${Date.now()}`,
+        user: {
+          user_id: role === 'asha_worker' ? 'usr_w101' : 'usr_sup01',
+          name: role === 'asha_worker' ? MOCK_WORKER.name : 'Dr. Ramesh Kumar (Medical Officer)',
+          phone,
+          role,
+          phc_id: 'phc_ramanthapur_01'
+        }
+      }
+    );
+  },
+
+  register: async (userData) => {
+    return safeApiCall(
+      () => apiClient.post('/auth/register', userData),
+      {
+        token: `mock_jwt_token_${Date.now()}`,
+        user: {
+          user_id: `usr_${Date.now()}`,
+          name: userData.name,
+          phone: userData.phone,
+          role: userData.role,
+          phc_id: 'phc_ramanthapur_01'
+        }
+      }
+    );
+  },
+
+  getCurrentUser: async () => {
+    return safeApiCall(
+      () => apiClient.get('/auth/me'),
+      {
+        user_id: 'usr_w101',
+        name: 'Lakshmi Devi',
+        phone: '+91 98765 43210',
+        role: 'asha_worker',
+        phc_id: 'phc_ramanthapur_01'
+      }
+    );
+  },
+
   requestOtp: async (phone) => {
     return safeApiCall(
       () => apiClient.post('/auth/request-otp', { phone }),

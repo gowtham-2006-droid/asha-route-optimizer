@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from database import engine, get_db, Base
 from models import PHC, User, Worker, Patient, RiskScore, Route, RouteStop, EmergencyCase, ResourceItem, Message, Report
-from auth import create_access_token, verify_token
+from auth import create_access_token, verify_token, hash_password, verify_password
 from seed import seed_database
 from services.ai_gateway import call_predict_risk, call_optimize_routes
 from websocket_manager import ws_manager
@@ -44,6 +44,18 @@ class VerifyOtpSchema(BaseModel):
     phone: str = Field(..., example="+919876543210")
     otp: str = Field(..., example="123456")
     role: Optional[str] = "asha_worker"
+
+class LoginSchema(BaseModel):
+    phone: str = Field(..., example="+919876543210")
+    password: str = Field(..., example="password123")
+    role: Optional[str] = "asha_worker"
+
+class RegisterSchema(BaseModel):
+    name: str = Field(..., example="Lakshmi Devi")
+    phone: str = Field(..., example="+919876543210")
+    password: str = Field(..., example="password123")
+    role: str = Field(..., example="asha_worker")
+    village: Optional[str] = "Ramanthapur"
 
 class PatientCreateSchema(BaseModel):
     name: str
@@ -104,18 +116,29 @@ def request_otp(body: RequestOtpSchema):
         }
     }
 
-@app.post("/api/v1/auth/verify-otp")
-def verify_otp(body: VerifyOtpSchema, db: Session = Depends(get_db)):
-    if body.otp != "123456" and len(body.otp) != 6:
-        raise HTTPException(status_code=401, detail="Invalid OTP code")
-
+@app.post("/api/v1/auth/login")
+def login(body: LoginSchema, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.phone == body.phone).first()
+    
     if not user:
-        user_id = "usr_w101" if body.role == "asha_worker" else "usr_sup01"
-        name = "Lakshmi Devi" if body.role == "asha_worker" else "Dr. Ramesh Kumar"
-        user = User(id=user_id, phone=body.phone, name=name, role=body.role or "asha_worker", phc_id="phc_ramanthapur_01")
+        # Auto-provision if phone matches seed defaults or create new user
+        user_id = f"usr_{int(datetime.datetime.utcnow().timestamp())}"
+        default_name = "Lakshmi Devi" if body.role == "asha_worker" else "Dr. Ramesh Kumar"
+        user = User(
+            id=user_id,
+            phone=body.phone,
+            name=default_name,
+            role=body.role or "asha_worker",
+            password_hash=hash_password(body.password),
+            phc_id="phc_ramanthapur_01"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    elif user.password_hash and not verify_password(body.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid phone number or password")
 
-    token = create_access_token({"sub": user.id, "phone": user.phone, "role": user.role})
+    token = create_access_token({"sub": user.id, "phone": user.phone, "role": user.role, "name": user.name})
     return {
         "success": True,
         "data": {
@@ -129,6 +152,80 @@ def verify_otp(body: VerifyOtpSchema, db: Session = Depends(get_db)):
                 "role": user.role,
                 "phc_id": user.phc_id
             }
+        }
+    }
+
+@app.post("/api/v1/auth/register")
+def register_user(body: RegisterSchema, db: Session = Depends(get_db)):
+    existing = db.query(User).filter(User.phone == body.phone).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Phone number already registered")
+
+    user_id = f"usr_{int(datetime.datetime.utcnow().timestamp())}"
+    user = User(
+        id=user_id,
+        phone=body.phone,
+        name=body.name,
+        role=body.role,
+        password_hash=hash_password(body.password),
+        phc_id="phc_ramanthapur_01"
+    )
+    db.add(user)
+
+    if body.role == "asha_worker":
+        worker = Worker(
+            id=user_id,
+            user_id=user_id,
+            assigned_village=body.village or "Ramanthapur",
+            daily_max_visits=10,
+            current_latitude=17.3950,
+            current_longitude=78.5300
+        )
+        db.add(worker)
+
+    db.commit()
+    db.refresh(user)
+
+    token = create_access_token({"sub": user.id, "phone": user.phone, "role": user.role, "name": user.name})
+    return {
+        "success": True,
+        "data": {
+            "token": token,
+            "token_type": "Bearer",
+            "expires_in": 43200,
+            "user": {
+                "user_id": user.id,
+                "name": user.name,
+                "phone": user.phone,
+                "role": user.role,
+                "phc_id": user.phc_id
+            }
+        }
+    }
+
+@app.get("/api/v1/auth/me")
+def get_current_user_profile(payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
+    user_id = payload.get("sub")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return {
+            "success": True,
+            "data": {
+                "user_id": "usr_w101",
+                "name": "Lakshmi Devi",
+                "phone": "+91 98765 43210",
+                "role": "asha_worker",
+                "phc_id": "phc_ramanthapur_01"
+            }
+        }
+    return {
+        "success": True,
+        "data": {
+            "user_id": user.id,
+            "name": user.name,
+            "phone": user.phone,
+            "role": user.role,
+            "phc_id": user.phc_id
         }
     }
 
