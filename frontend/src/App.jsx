@@ -38,8 +38,19 @@ export default function App() {
   const [activeRole, setActiveRole] = useState(() => currentUser?.role || 'asha_worker');
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  const [patients, setPatients] = useState(MOCK_PATIENTS);
-  const [stops, setStops] = useState(MOCK_ROUTE_STOPS);
+  const [patients, setPatients] = useState([]);
+  const [stops, setStops] = useState([]);
+  useEffect(() => {
+  fetch('http://127.0.0.1:5001/api/v1/patients')
+    .then(res => res.json())
+    .then(json => setPatients(json.data.patients))
+    .catch(err => console.error('Failed to fetch patients:', err));
+
+  fetch('http://127.0.0.1:5001/api/v1/routes/usr_w101/today')
+    .then(res => res.json())
+    .then(json => setStops(json.data.data.stops))
+    .catch(err => console.error('Failed to fetch route:', err));
+}, []);
 
   // UI Drawer & Modal States
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
