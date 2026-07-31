@@ -45,13 +45,13 @@ export const authService = {
 
   verifyOtp: async (phone, otp, role = 'asha_worker') => {
     return safeApiCall(
-      () => apiClient.post('/auth/verify-otp', { phone, otp }),
+      () => apiClient.post('/auth/verify-otp', { phone, otp, role }),
       {
         token: `mock_jwt_token_${Date.now()}`,
         expires_in: 43200,
         user: {
           user_id: role === 'asha_worker' ? 'usr_w101' : 'usr_sup01',
-          name: role === 'asha_worker' ? MOCK_WORKER.name : 'Dr. Radhika Rao (Medical Officer)',
+          name: role === 'asha_worker' ? MOCK_WORKER.name : 'Dr. Ramesh Kumar (Medical Officer)',
           phone,
           role,
           phc_id: 'phc_ramanthapur_01'
@@ -85,7 +85,7 @@ export const patientService = {
 };
 
 export const routeService = {
-  getTodayRoute: async (workerId) => {
+  getTodayRoute: async (workerId = 'usr_w101') => {
     return safeApiCall(
       () => apiClient.get(`/routes/${workerId}/today`),
       {
@@ -104,6 +104,53 @@ export const routeService = {
         emergency_inserted_at_sequence: 1,
         stops: MOCK_ROUTE_STOPS
       }
+    );
+  }
+};
+
+export const emergencyService = {
+  getEmergencies: async () => {
+    return safeApiCall(
+      () => apiClient.get('/emergencies'),
+      [
+        { caseId: 'ER-1024', patientName: 'Sita Devi', village: 'Pedda Thimmapur', emergency_type: 'Pregnancy Complication', priority: 'Critical', status: 'Active' },
+        { caseId: 'ER-1025', patientName: 'Ravi Kumar', village: 'Uppal', emergency_type: 'High Fever', priority: 'High', status: 'Active' }
+      ]
+    );
+  }
+};
+
+export const resourceService = {
+  getResources: async () => {
+    return safeApiCall(
+      () => apiClient.get('/resources'),
+      [
+        { id: 'res_01', name: 'ORS Packets', category: 'Medical Supplies', available_stock: 12, unit: 'Packets', status: 'Low Stock' },
+        { id: 'res_02', name: 'Iron Tablets', category: 'Medicines', available_stock: 28, unit: 'Tablets', status: 'Low Stock' }
+      ]
+    );
+  },
+
+  updateStock: async (id, available_stock) => {
+    return safeApiCall(
+      () => apiClient.put(`/resources/${id}`, { available_stock }),
+      { id, available_stock }
+    );
+  }
+};
+
+export const messageService = {
+  getMessages: async (receiverId = 'usr_sup01') => {
+    return safeApiCall(
+      () => apiClient.get('/messages', { params: { receiver_id: receiverId } }),
+      []
+    );
+  },
+
+  sendMessage: async (msgData) => {
+    return safeApiCall(
+      () => apiClient.post('/messages', msgData),
+      { ...msgData, id: `msg_${Date.now()}`, timestamp: 'Just now' }
     );
   }
 };

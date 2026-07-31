@@ -39,6 +39,9 @@ class Worker(Base):
     daily_max_visits = Column(Integer, default=10)
     current_latitude = Column(Float, nullable=True)
     current_longitude = Column(Float, nullable=True)
+    battery_pct = Column(Integer, default=85)
+    network_status = Column(String(20), default="Good")
+    status = Column(String(20), default="Active")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship("User", back_populates="worker")
@@ -118,3 +121,62 @@ class RouteStop(Base):
     status = Column(String(20), default="scheduled")
 
     route = relationship("Route", back_populates="stops")
+
+class EmergencyCase(Base):
+    __tablename__ = "emergency_cases"
+
+    id = Column(String(50), primary_key=True)
+    patient_id = Column(String(50), nullable=True)
+    patient_name = Column(String(100), nullable=False)
+    age = Column(Integer, default=30)
+    gender = Column(String(10), default="Female")
+    village = Column(String(100), nullable=False)
+    phone = Column(String(20), nullable=True)
+    emergency_type = Column(String(100), nullable=False)
+    priority = Column(String(20), default="Critical")
+    status = Column(String(20), default="Active")
+    risk_score = Column(Integer, default=90)
+    reported_time = Column(String(30), default="Just now")
+    eta = Column(String(20), default="15 min")
+    assigned_worker_id = Column(String(50), nullable=True)
+    nearest_hospital = Column(String(100), default="Gandhi Hospital")
+    vitals_json = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class ResourceItem(Base):
+    __tablename__ = "resource_items"
+
+    id = Column(String(50), primary_key=True)
+    name = Column(String(100), nullable=False)
+    category = Column(String(50), nullable=False)
+    available_stock = Column(Integer, nullable=False)
+    unit = Column(String(20), nullable=False)
+    min_stock_level = Column(Integer, nullable=False)
+    status = Column(String(20), default="Good Stock")
+    expiry_date = Column(String(30), nullable=True)
+    last_updated = Column(String(30), default="Today")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(String(50), primary_key=True)
+    sender_id = Column(String(50), nullable=False)
+    sender_name = Column(String(100), nullable=False)
+    receiver_id = Column(String(50), nullable=False)
+    text = Column(Text, nullable=False)
+    timestamp = Column(String(30), nullable=False)
+    is_me = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class Report(Base):
+    __tablename__ = "reports"
+
+    id = Column(String(50), primary_key=True)
+    title = Column(String(150), nullable=False)
+    report_type = Column(String(50), nullable=False)
+    generated_at = Column(String(50), nullable=False)
+    file_format = Column(String(10), default="XLSX")
+    download_url = Column(String(255), nullable=True)
+    metrics_json = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)

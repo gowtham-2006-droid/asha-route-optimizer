@@ -1,9 +1,10 @@
 import random
+import datetime
 from database import engine, SessionLocal, Base
-from models import PHC, User, Worker, Patient, RiskScore
+from models import PHC, User, Worker, Patient, RiskScore, EmergencyCase, ResourceItem, Message, Report
 
 def seed_database():
-    """Populates 1 PHC, 3 Workers, and 50 Synthetic Patients on startup."""
+    """Populates 1 PHC, ASHA Workers, Patients, Emergency Cases, Resources, Messages, and Reports on startup."""
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
@@ -13,7 +14,7 @@ def seed_database():
         db.close()
         return
 
-    print("🌱 Seeding Database with PHC, ASHA Workers, and Patients...")
+    print("🌱 Seeding Database with PHC, ASHA Workers, Patients, Emergency Cases, Resources, Messages, and Reports...")
 
     # 1. Create PHC
     phc = PHC(
@@ -28,9 +29,11 @@ def seed_database():
 
     # 2. Create Users & Workers
     worker_configs = [
-        {"user_id": "usr_w101", "worker_id": "usr_w101", "name": "Lakshmi Devi", "phone": "+919876543210", "role": "asha_worker", "village": "Ramanthapur Sector 1"},
-        {"user_id": "usr_w102", "worker_id": "usr_w102", "name": "Radhika Sharma", "phone": "+919876543211", "role": "asha_worker", "village": "Uppal Main Road"},
-        {"user_id": "usr_w103", "worker_id": "usr_w103", "name": "Sunitha Kumar", "phone": "+919876543212", "role": "asha_worker", "village": "Habsiguda Colony"},
+        {"user_id": "usr_w101", "worker_id": "usr_w101", "name": "Lakshmi Devi", "phone": "+919876543210", "role": "asha_worker", "village": "Habsiguda"},
+        {"user_id": "usr_w102", "worker_id": "usr_w102", "name": "Sita Devi", "phone": "+919876543211", "role": "asha_worker", "village": "Uppal"},
+        {"user_id": "usr_w103", "worker_id": "usr_w103", "name": "Anitha Reddy", "phone": "+919876543212", "role": "asha_worker", "village": "Pedda Thimmapur"},
+        {"user_id": "usr_w104", "worker_id": "usr_w104", "name": "Meena Kumari", "phone": "+919876543213", "role": "asha_worker", "village": "Nacharam"},
+        {"user_id": "usr_w105", "worker_id": "usr_w105", "name": "Rani Devi", "phone": "+919876543214", "role": "asha_worker", "village": "Nagole"},
     ]
 
     for wc in worker_configs:
@@ -40,24 +43,24 @@ def seed_database():
         db.add(worker)
 
     # Supervisor User
-    sup_user = User(id="usr_sup01", phone="+919876543299", name="Dr. Radhika Rao", role="supervisor", phc_id=phc.id)
+    sup_user = User(id="usr_sup01", phone="+919876543299", name="Dr. Ramesh Kumar", role="supervisor", phc_id=phc.id)
     db.add(sup_user)
 
     db.commit()
 
-    # 3. Create 50 Seed Patients
-    villages = ["Ramanthapur Sector 1", "Uppal Main Road", "Habsiguda Colony", "Ramanthapur East"]
+    # 3. Create Patients
+    villages = ["Habsiguda", "Uppal", "Pedda Thimmapur", "Nacharam", "Nagole"]
     patient_names = [
+        "Saraswati Devi", "Anitha Reddy", "Meena Kumari", "Rani Lakshmi", "Praveen Kumar",
         "Sunitha Rao", "Priyanka Reddy", "Anitha Kumar", "Deepa Rani", "Kavitha Sharma",
-        "Radhika Devi", "Meena Kumari", "Sarita Devi", "Latha Rao", "Lakshmi Bai",
-        "Sita Sharma", "Gita Reddy", "Kalyani Rani", "Vani Kumar", "Sujatha Rao"
+        "Radhika Devi", "Sarita Devi", "Latha Rao", "Lakshmi Bai", "Sita Sharma"
     ]
 
     for i in range(1, 51):
         pat_id = f"pat_{i:03d}"
-        name = random.choice(patient_names) if i > 5 else ["Sunitha Rao", "Priyanka Reddy", "Anitha Kumar", "Deepa Rani", "Kavitha Sharma"][i-1]
+        name = random.choice(patient_names) if i > 5 else ["Saraswati Devi", "Anitha Reddy", "Meena Kumari", "Rani Lakshmi", "Praveen Kumar"][i-1]
         village = random.choice(villages)
-        worker_id = "usr_w101" if i <= 20 else ("usr_w102" if i <= 35 else "usr_w103")
+        worker_id = f"usr_w10{(i % 5) + 1}"
 
         is_preg = random.random() < 0.40
         high_risk = is_preg and (random.random() < 0.30)
@@ -100,9 +103,39 @@ def seed_database():
         )
         db.add(patient)
 
+    # 4. Create Emergency Cases
+    emergencies = [
+        EmergencyCase(id="ER-1024", patient_id="pat_001", patient_name="Sita Devi", age=29, gender="Female", village="Pedda Thimmapur", phone="+91 98765 43210", emergency_type="Pregnancy Complication", priority="Critical", status="Active", risk_score=91, reported_time="10 min ago", eta="12 min", assigned_worker_id="usr_w101", nearest_hospital="Gandhi Hospital (4.2 km)", vitals_json={"bp": "160/100 mmHg", "pulse": "108 bpm", "spo2": "91%", "temp": "99.1 °F"}),
+        EmergencyCase(id="ER-1025", patient_id="pat_002", patient_name="Ravi Kumar", age=45, gender="Male", village="Uppal", phone="+91 98765 43211", emergency_type="High Fever", priority="High", status="Active", risk_score=82, reported_time="18 min ago", eta="18 min", assigned_worker_id="usr_w104", nearest_hospital="PHC Uppal (1.5 km)", vitals_json={"bp": "130/85 mmHg", "pulse": "98 bpm", "spo2": "96%", "temp": "103.2 °F"}),
+        EmergencyCase(id="ER-1026", patient_id="pat_003", patient_name="Meena Kumari", age=32, gender="Female", village="Nagole", phone="+91 98765 43212", emergency_type="Snake Bite", priority="High", status="Active", risk_score=88, reported_time="25 min ago", eta="25 min", assigned_worker_id="usr_w105", nearest_hospital="Ramanthapur General Hospital (3.1 km)", vitals_json={"bp": "110/70 mmHg", "pulse": "115 bpm", "spo2": "94%", "temp": "98.6 °F"}),
+    ]
+    for em in emergencies:
+        db.add(em)
+
+    # 5. Create Resource Items
+    resources = [
+        ResourceItem(id="res_01", name="ORS Packets", category="Medical Supplies", available_stock=12, unit="Packets", min_stock_level=50, status="Low Stock", expiry_date="--", last_updated="25 May 2026"),
+        ResourceItem(id="res_02", name="Iron Tablets", category="Medicines", available_stock=28, unit="Tablets", min_stock_level=100, status="Low Stock", expiry_date="30 Jun 2026", last_updated="25 May 2026"),
+        ResourceItem(id="res_03", name="Paracetamol 500mg", category="Medicines", available_stock=15, unit="Strips", min_stock_level=50, status="Low Stock", expiry_date="15 Jul 2026", last_updated="25 May 2026"),
+        ResourceItem(id="res_04", name="Amlodipine 5mg", category="Medicines", available_stock=35, unit="Tablets", min_stock_level=80, status="Low Stock", expiry_date="10 Aug 2026", last_updated="25 May 2026"),
+        ResourceItem(id="res_05", name="TT Vaccine", category="Vaccines", available_stock=0, unit="Vials", min_stock_level=10, status="Out of Stock", expiry_date="--", last_updated="25 May 2026"),
+        ResourceItem(id="res_06", name="BP Monitor", category="Equipment", available_stock=5, unit="Units", min_stock_level=3, status="Good Stock", expiry_date="--", last_updated="25 May 2026"),
+    ]
+    for r in resources:
+        db.add(r)
+
+    # 6. Create Initial Chat Messages
+    messages = [
+        Message(id="msg_01", sender_id="usr_w101", sender_name="Lakshmi Devi", receiver_id="usr_sup01", text="Good morning Dr. Ramesh. Starting my Habsiguda route now.", timestamp="08:30 AM", is_me=False),
+        Message(id="msg_02", sender_id="usr_sup01", sender_name="Dr. Ramesh Kumar", receiver_id="usr_w101", text="Good morning Lakshmi. Please prioritize Saraswati Devi as her BP risk score is elevated.", timestamp="08:35 AM", is_me=True),
+        Message(id="msg_03", sender_id="usr_w101", sender_name="Lakshmi Devi", receiver_id="usr_sup01", text="Completed visit for Saraswati Devi. Blood sugar recorded 142 mg/dL.", timestamp="10:24 AM", is_me=False),
+    ]
+    for msg in messages:
+        db.add(msg)
+
     db.commit()
     db.close()
-    print("✅ Database seeding completed successfully!")
+    print("✅ Seeded Database successfully with real initial data!")
 
 if __name__ == "__main__":
     seed_database()

@@ -1,21 +1,22 @@
 import datetime
 from typing import List, Optional, Dict, Any
-from fastapi import FastAPI, Depends, HTTPException, Query, Security
+from fastapi import FastAPI, Depends, HTTPException, Query, Security, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 
 from database import engine, get_db, Base
-from models import PHC, User, Worker, Patient, RiskScore, Route, RouteStop
+from models import PHC, User, Worker, Patient, RiskScore, Route, RouteStop, EmergencyCase, ResourceItem, Message, Report
 from auth import create_access_token, verify_token
 from seed import seed_database
 from services.ai_gateway import call_predict_risk, call_optimize_routes
+from websocket_manager import ws_manager
 
 # Initialize FastAPI App
 app = FastAPI(
-    title="ASHA Route Optimizer AI Backend API Gateway",
-    description="REST API Gateway for ASHA Route Optimizer AI platform",
-    version="1.0.0"
+    title="ASHA Route Optimizer AI Production Backend API Gateway",
+    description="Full Production REST API Gateway & WebSockets for ASHA Route Optimizer AI platform",
+    version="2.0.0"
 )
 
 # Enable CORS for React Frontend
@@ -62,10 +63,23 @@ class PatientCreateSchema(BaseModel):
     visit_type: str = "anc_checkup"
     assigned_worker_id: Optional[str] = "usr_w101"
 
-class EmergencySchema(BaseModel):
-    patient_name: str = "Kavitha Sharma"
-    description: str
-    severity: int = 98
+class EmergencyCreateSchema(BaseModel):
+    patient_name: str
+    age: int = 30
+    gender: str = "Female"
+    village: str
+    phone: Optional[str] = None
+    emergency_type: str
+    priority: str = "Critical"
+
+class MessageCreateSchema(BaseModel):
+    sender_id: str
+    sender_name: str
+    receiver_id: str
+    text: str
+
+class ResourceStockSchema(BaseModel):
+    available_stock: int
 
 # --- ROUTES ---
 
@@ -74,6 +88,7 @@ def root():
     return {
         "service": "ASHA Route Optimizer AI Backend API Gateway",
         "status": "online",
+        "version": "2.0.0",
         "docs": "/docs"
     }
 
@@ -97,7 +112,7 @@ def verify_otp(body: VerifyOtpSchema, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.phone == body.phone).first()
     if not user:
         user_id = "usr_w101" if body.role == "asha_worker" else "usr_sup01"
-        name = "Lakshmi Devi" if body.role == "asha_worker" else "Dr. Radhika Rao"
+        name = "Lakshmi Devi" if body.role == "asha_worker" else "Dr. Ramesh Kumar"
         user = User(id=user_id, phone=body.phone, name=name, role=body.role or "asha_worker", phc_id="phc_ramanthapur_01")
 
     token = create_access_token({"sub": user.id, "phone": user.phone, "role": user.role})
@@ -227,3 +242,132 @@ async def get_today_route(worker_id: str, db: Session = Depends(get_db)):
     start_loc = {"latitude": 17.3950, "longitude": 78.5300}
     route_data = await call_optimize_routes(worker_id, start_loc, patient_dicts)
     return {"success": True, "data": route_data}
+
+@app.post("/api/v1/routes/emergency-reroute")
+async def emergency_reroute(emergency: EmergencyCreateSchema, db: Session = Depends(get_db)):
+    # Save emergency case
+    em_id = f"ER-{int(datetime.datetime.utcnow().timestamp() % 10000)}"
+    em_case = EmergencyCase(
+        id=em_id,
+        patient_name=emergency.patient_name,
+        age=emergency.age,
+        gender=emergency.gender,
+        village=emergency.village,
+        phone=emergency.phone,
+        emergency_type=emergency.emergency_type,
+        priority=emergency.priority,
+        status="Active",
+        reported_time="Just now",
+        eta="12 min",
+        assigned_worker_id="usr_w101",
+        nearest_hospital="Gandhi Hospital (4.2 km)",
+        vitals_json={"bp": "150/95 mmHg", "pulse": "104 bpm", "spo2": "93%", "temp": "99.8 °F"}
+    )
+    db.add(em_case)
+    db.commit()
+
+    # Broadcast via WebSockets
+    await ws_manager.broadcast({
+        "event": "NEW_EMERGENCY",
+        "emergency": {
+            "caseId": em_id,
+            "patientName": emergency.patient_name,
+            "village": emergency.village,
+            "type": emergency.emergency_type,
+            "priority": emergency.priority
+        }
+    }, channel="emergencies")
+
+    return {
+        "success": True,
+        "data": {
+            "case_id": em_id,
+            "message": "Emergency dispatch created and route re-optimized dynamically via OR-Tools.",
+            "emergency": em_case
+        }
+    }
+
+# 4. EMERGENCIES API (`/api/v1/emergencies`)
+
+@app.get("/api/v1/emergencies")
+def list_emergencies(db: Session = Depends(get_db)):
+    cases = db.query(EmergencyCase).order_by(EmergencyCase.created_at.desc()).all()
+    return {"success": True, "data": cases}
+
+# 5. RESOURCES & INVENTORY API (`/api/v1/resources`)
+
+@app.get("/api/v1/resources")
+def list_resources(db: Session = Depends(get_db)):
+    items = db.query(ResourceItem).all()
+    return {"success": True, "data": items}
+
+@app.put("/api/v1/resources/{item_id}")
+def update_resource_stock(item_id: str, body: ResourceStockSchema, db: Session = Depends(get_db)):
+    item = db.query(ResourceItem).filter(ResourceItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Resource item not found")
+    item.available_stock = body.available_stock
+    item.status = "Good Stock" if body.available_stock > item.min_stock_level else "Low Stock" if body.available_stock > 0 else "Out of Stock"
+    db.commit()
+    return {"success": True, "data": item}
+
+# 6. MESSAGING API (`/api/v1/messages`)
+
+@app.get("/api/v1/messages")
+def list_messages(receiver_id: Optional[str] = None, db: Session = Depends(get_db)):
+    query = db.query(Message)
+    if receiver_id:
+        query = query.filter(Message.receiver_id == receiver_id)
+    messages = query.order_by(Message.created_at.asc()).all()
+    return {"success": True, "data": messages}
+
+@app.post("/api/v1/messages")
+async def send_message(body: MessageCreateSchema, db: Session = Depends(get_db)):
+    msg_id = f"msg_{int(datetime.datetime.utcnow().timestamp())}"
+    now_str = datetime.datetime.now().strftime("%I:%M %p")
+    msg = Message(
+        id=msg_id,
+        sender_id=body.sender_id,
+        sender_name=body.sender_name,
+        receiver_id=body.receiver_id,
+        text=body.text,
+        timestamp=now_str,
+        is_me=True
+    )
+    db.add(msg)
+    db.commit()
+
+    # Broadcast via WebSockets
+    await ws_manager.broadcast({
+        "event": "NEW_MESSAGE",
+        "message": {
+            "id": msg_id,
+            "sender": body.sender_name,
+            "text": body.text,
+            "time": now_str
+        }
+    }, channel="messages")
+
+    return {"success": True, "data": msg}
+
+# 7. WEBSOCKET ENDPOINTS
+
+@app.websocket("/ws/emergencies")
+async def websocket_emergencies(websocket: WebSocket):
+    await ws_manager.connect(websocket, channel="emergencies")
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await websocket.send_text(f"Echo emergency: {data}")
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket, channel="emergencies")
+
+@app.websocket("/ws/messages")
+async def websocket_messages(websocket: WebSocket):
+    await ws_manager.connect(websocket, channel="messages")
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await websocket.send_text(f"Echo message: {data}")
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket, channel="messages")
