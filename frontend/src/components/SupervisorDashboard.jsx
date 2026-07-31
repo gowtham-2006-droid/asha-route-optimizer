@@ -151,7 +151,7 @@ export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
     );
   }
 
-  if (activeTab === 'emergencies') {
+  if (activeTab === 'emergencies' || activeTab === 'emergency') {
     return (
       <PhcEmergenciesPage
         onNavigateToTab={(tab) => setActiveTab(tab)}

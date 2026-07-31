@@ -267,7 +267,7 @@ export default function App() {
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onLogout={handleLogout}
             />
-          ) : activeTab === 'emergency' ? (
+          ) : activeTab === 'emergency' || activeTab === 'emergencies' ? (
             /* EMERGENCY DISPATCH PAGE (Exact Replica of User Mockup) */
             <EmergencyPage
               currentUser={currentUser}
