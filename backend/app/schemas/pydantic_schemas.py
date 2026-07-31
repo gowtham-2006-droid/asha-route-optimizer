@@ -77,15 +77,21 @@ class WorkerResponseSchema(BaseModel):
 
 # Patient Schemas
 class PatientCreateSchema(BaseModel):
-    name: str
-    age: int
-    gender: str = "female"
-    village: str
-    latitude: float
-    longitude: float
-    is_pregnant: bool = False
-    trimester: int = 0
-    high_risk_pregnancy: bool = False
+    name: str = Field(..., example="Sita Devi")
+    age: int = Field(..., example=29)
+    gender: str = Field("female", example="female")
+    phone: Optional[str] = Field(None, example="+919876543210")
+    village: str = Field(..., example="Ramanthapur")
+    latitude: float = Field(..., example=17.3950)
+    longitude: float = Field(..., example=78.5300)
+    is_pregnant: bool = Field(False, example=True)
+    trimester: int = Field(0, example=2)
+    high_risk_pregnancy: bool = Field(False, example=False)
+    blood_pressure: str = Field("120/80 mmHg", example="130/85 mmHg")
+    sugar_level: int = Field(110, example=120)
+    pulse_rate: int = Field(72, example=78)
+    oxygen_level: int = Field(98, example=98)
+    medications: List[str] = Field(["Iron Tablets", "Folic Acid"], example=["Iron Tablets", "Folic Acid"])
     newborn_age_days: int = 0
     vaccination_status: str = "up_to_date"
     days_overdue: int = 0
@@ -93,6 +99,28 @@ class PatientCreateSchema(BaseModel):
     previous_missed_visits: int = 0
     visit_type: str = "anc_checkup"
     assigned_worker_id: Optional[str] = "usr_w101"
+
+class PatientUpdateSchema(BaseModel):
+    name: Optional[str] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    phone: Optional[str] = None
+    village: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_pregnant: Optional[bool] = None
+    trimester: Optional[int] = None
+    high_risk_pregnancy: Optional[bool] = None
+    blood_pressure: Optional[str] = None
+    sugar_level: Optional[int] = None
+    pulse_rate: Optional[int] = None
+    oxygen_level: Optional[int] = None
+    medications: Optional[List[str]] = None
+    vaccination_status: Optional[str] = None
+    days_overdue: Optional[int] = None
+    chronic_disease_flags: Optional[List[str]] = None
+    visit_type: Optional[str] = None
+    assigned_worker_id: Optional[str] = None
 
 class PatientResponseSchema(PatientCreateSchema):
     patient_id: str
