@@ -340,6 +340,8 @@ export default function App() {
               onTriggerEmergency={() => setActiveTab('emergency')}
               onLogout={handleLogout}
             />
+          ) : activeTab === 'supervisor' ? (
+            <SupervisorDashboard onGenerateReport={() => setIsReportOpen(true)} onLogout={handleLogout} />
           ) : (
             <AshaCompanionDashboard
               stops={stops}
@@ -355,9 +357,29 @@ export default function App() {
           )
         ) : (
           /* PHC SUPERVISOR DEDICATED COMMAND CENTER PORTAL */
-          <SupervisorDashboard onGenerateReport={() => setIsReportOpen(true)} />
+          <SupervisorDashboard onGenerateReport={() => setIsReportOpen(true)} onLogout={handleLogout} />
         )}
       </main>
+
+      {/* Floating Portal Switcher Button */}
+      <div className="fixed bottom-4 right-4 z-40">
+        <button
+          onClick={() => {
+            if (activeRole === 'supervisor') {
+              setActiveRole('asha_worker');
+              setActiveTab('dashboard');
+              showToast('Switched to ASHA Companion Portal', 'info');
+            } else {
+              setActiveRole('supervisor');
+              showToast('Switched to PHC Command Center (Dr. Ramesh Kumar)', 'info');
+            }
+          }}
+          className="px-4 py-2.5 rounded-full bg-[#6c47ff] hover:bg-purple-700 text-white font-extrabold text-xs shadow-2xl shadow-purple-900/50 flex items-center gap-2 border border-purple-400/30 transition-all hover:scale-105"
+        >
+          <Sparkles className="w-4 h-4 fill-current animate-pulse" />
+          <span>{activeRole === 'supervisor' ? 'Switch to ASHA Companion 📱' : 'Switch to PHC Command Center 🏥'}</span>
+        </button>
+      </div>
 
       {/* Patient Clinical Details Slide-Over Drawer */}
       <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
@@ -418,6 +440,7 @@ export default function App() {
             <CommandItem onSelect={() => { setActiveTab('settings'); setIsCommandOpen(false); }}>Settings</CommandItem>
           </CommandGroup>
           <CommandGroup heading="Actions">
+            <CommandItem onSelect={() => { setActiveRole(prev => prev === 'asha_worker' ? 'supervisor' : 'asha_worker'); setIsCommandOpen(false); }}>🔄 Toggle Portal View (ASHA / PHC Supervisor)</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('emergency'); setIsCommandOpen(false); }}>🚨 Emergency Trigger</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('add_patient'); setIsCommandOpen(false); }}>Register New Patient</CommandItem>
             <CommandItem onSelect={() => { handleLogout(); setIsCommandOpen(false); }}>🚪 Log Out</CommandItem>
