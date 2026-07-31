@@ -75,6 +75,36 @@ class WorkerResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+# Village Schemas
+class VillageCreateSchema(BaseModel):
+    name: str = Field(..., example="Ramanthapur Sector 1")
+    district: str = Field("Malkajgiri", example="Malkajgiri")
+    state: str = Field("Telangana", example="Telangana")
+    population: int = Field(1200, example=1200)
+    total_households: int = Field(310, example=310)
+    latitude: float = Field(17.3950, example=17.3950)
+    longitude: float = Field(78.5300, example=78.5300)
+    risk_score: int = Field(45, example=45)
+
+class VillageUpdateSchema(BaseModel):
+    name: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    population: Optional[int] = None
+    total_households: Optional[int] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    risk_score: Optional[int] = None
+
+class VillageResponseSchema(VillageCreateSchema):
+    id: str
+    workers_assigned_count: int
+    workers_assigned: List[Dict[str, Any]]
+    risk_band: str
+    created_at: Any
+
+    model_config = ConfigDict(from_attributes=True)
+
 # Patient Schemas
 class PatientCreateSchema(BaseModel):
     name: str = Field(..., example="Sita Devi")

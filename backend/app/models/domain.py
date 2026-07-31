@@ -36,6 +36,7 @@ class Village(Base):
     total_households = Column(Integer, default=250)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
+    risk_score = Column(Integer, default=45, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow, nullable=False)
     is_deleted = Column(Boolean, default=False, index=True)
