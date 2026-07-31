@@ -16,6 +16,7 @@ import VillagesPage from './pages/VillagesPage';
 import LiveRoutesPage from './pages/LiveRoutesPage';
 import PhcEmergenciesPage from './pages/PhcEmergenciesPage';
 import PhcReportsPage from './pages/PhcReportsPage';
+import PhcResourcesPage from './pages/PhcResourcesPage';
 
 export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -164,6 +165,15 @@ export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   if (activeTab === 'reports') {
     return (
       <PhcReportsPage
+        onNavigateToTab={(tab) => setActiveTab(tab)}
+        onLogout={onLogout}
+      />
+    );
+  }
+
+  if (activeTab === 'resources') {
+    return (
+      <PhcResourcesPage
         onNavigateToTab={(tab) => setActiveTab(tab)}
         onLogout={onLogout}
       />
