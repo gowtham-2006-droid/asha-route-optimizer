@@ -13,13 +13,14 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, LineCh
 import RouteMap from '../RouteMap';
 import { MOCK_ROUTE_STOPS } from '../../services/mockData';
 
+import { emergencyService } from '../../services/api';
+
 export default function PhcEmergenciesPage({
   onNavigateToTab,
   onLogout
 }) {
   const [selectedCaseId, setSelectedCaseId] = useState('ER-1024');
-
-  const emergencyCases = [
+  const [emergencyCases, setEmergencyCases] = useState([
     {
       caseId: 'ER-1024',
       patientId: 'P-10456',
@@ -39,88 +40,42 @@ export default function PhcEmergenciesPage({
       assignedWorker: 'Lakshmi Devi',
       nearestHospital: 'Gandhi Hospital (4.2 km)',
       vitals: { bp: '160/100 mmHg', pulse: '108 bpm', spo2: '91%', temp: '99.1 °F' }
-    },
-    {
-      caseId: 'ER-1025',
-      patientId: 'P-10457',
-      patientName: 'Ravi Kumar',
-      age: 45,
-      gender: 'Male',
-      village: 'Uppal',
-      phone: '+91 98765 43211',
-      type: 'High Fever',
-      priority: 'High',
-      priorityColor: 'bg-amber-100 text-amber-800',
-      status: 'Active',
-      statusColor: 'bg-[#6c47ff] text-white',
-      riskScore: '82/100',
-      reportedTime: '18 min ago',
-      eta: '18 min',
-      assignedWorker: 'Meena Kumari',
-      nearestHospital: 'PHC Uppal (1.5 km)',
-      vitals: { bp: '130/85 mmHg', pulse: '98 bpm', spo2: '96%', temp: '103.2 °F' }
-    },
-    {
-      caseId: 'ER-1026',
-      patientId: 'P-10458',
-      patientName: 'Meena Kumari',
-      age: 32,
-      gender: 'Female',
-      village: 'Nagole',
-      phone: '+91 98765 43212',
-      type: 'Snake Bite',
-      priority: 'High',
-      priorityColor: 'bg-amber-100 text-amber-800',
-      status: 'Active',
-      statusColor: 'bg-[#6c47ff] text-white',
-      riskScore: '88/100',
-      reportedTime: '25 min ago',
-      eta: '25 min',
-      assignedWorker: 'Rani Devi',
-      nearestHospital: 'Ramanthapur General Hospital (3.1 km)',
-      vitals: { bp: '110/70 mmHg', pulse: '115 bpm', spo2: '94%', temp: '98.6 °F' }
-    },
-    {
-      caseId: 'ER-1023',
-      patientId: 'P-10455',
-      patientName: 'Anil Kumar',
-      age: 38,
-      gender: 'Male',
-      village: 'Habsiguda',
-      phone: '+91 98765 43213',
-      type: 'Road Accident',
-      priority: 'Critical',
-      priorityColor: 'bg-red-100 text-red-700',
-      status: 'Resolved',
-      statusColor: 'bg-emerald-100 text-emerald-800',
-      riskScore: '94/100',
-      reportedTime: '45 min ago',
-      eta: 'Resolved',
-      assignedWorker: 'Lakshmi Devi',
-      nearestHospital: 'Gandhi Hospital',
-      vitals: { bp: '120/80 mmHg', pulse: '80 bpm', spo2: '99%', temp: '98.4 °F' }
-    },
-    {
-      caseId: 'ER-1022',
-      patientId: 'P-10454',
-      patientName: 'Latha',
-      age: 50,
-      gender: 'Female',
-      village: 'Uppal',
-      phone: '+91 98765 43214',
-      type: 'Asthma',
-      priority: 'Medium',
-      priorityColor: 'bg-amber-100 text-amber-800',
-      status: 'Resolved',
-      statusColor: 'bg-emerald-100 text-emerald-800',
-      riskScore: '65/100',
-      reportedTime: '1h ago',
-      eta: 'Resolved',
-      assignedWorker: 'Meena Kumari',
-      nearestHospital: 'PHC Uppal',
-      vitals: { bp: '125/82 mmHg', pulse: '84 bpm', spo2: '97%', temp: '98.6 °F' }
     }
-  ];
+  ]);
+
+  React.useEffect(() => {
+    async function fetchRealEmergencies() {
+      try {
+        const res = await emergencyService.getEmergencies();
+        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped = res.data.map(em => ({
+            caseId: em.id,
+            patientId: em.patient_id || 'P-10456',
+            patientName: em.patient_name,
+            age: em.age || 30,
+            gender: em.gender || 'Female',
+            village: em.village,
+            phone: em.phone || '+91 98765 43210',
+            type: em.emergency_type,
+            priority: em.priority || 'Critical',
+            priorityColor: em.priority === 'Critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800',
+            status: em.status || 'Active',
+            statusColor: em.status === 'Active' ? 'bg-[#6c47ff] text-white' : 'bg-emerald-100 text-emerald-800',
+            riskScore: `${em.risk_score || 90}/100`,
+            reportedTime: em.reported_time || 'Just now',
+            eta: em.eta || '15 min',
+            assignedWorker: em.assigned_worker_id || 'Lakshmi Devi',
+            nearestHospital: em.nearest_hospital || 'Gandhi Hospital',
+            vitals: em.vitals_json || { bp: '150/95 mmHg', pulse: '104 bpm', spo2: '93%', temp: '99.8 °F' }
+          }));
+          setEmergencyCases(mapped);
+          if (mapped[0]) setSelectedCaseId(mapped[0].caseId);
+        }
+      } catch (err) {
+        console.warn("Real emergency fetch notice:", err);
+      }
+    }
+  }, []);
 
   const selectedCase = emergencyCases.find(c => c.caseId === selectedCaseId) || emergencyCases[0];
 

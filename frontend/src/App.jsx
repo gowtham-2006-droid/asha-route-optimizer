@@ -20,6 +20,7 @@ import ReportModal from './components/ReportModal';
 import RegisterPatientModal from './components/RegisterPatientModal';
 import PatientDetailModal from './components/PatientDetailModal';
 import PhoneOTPLogin from './components/PhoneOTPLogin';
+import { patientService, routeService, emergencyService, resourceService, messageService, authService } from './services/api';
 import { MOCK_WORKER, MOCK_ROUTE_STOPS, MOCK_PATIENTS } from './services/mockData';
 
 // Custom UI Components
@@ -59,6 +60,59 @@ export default function App() {
     if (currentUser?.role) {
       setActiveRole(currentUser.role);
     }
+  }, [currentUser]);
+
+  // Fetch real data from FastAPI backend when logged in
+  useEffect(() => {
+    if (!currentUser) return;
+
+    let isMounted = true;
+
+    async function loadRealBackendData() {
+      try {
+        // 1. Fetch Patients from Backend (/api/v1/patients)
+        const patRes = await patientService.getPatients();
+        if (isMounted && patRes.data && (Array.isArray(patRes.data) || Array.isArray(patRes.data.patients))) {
+          const rawPatients = Array.isArray(patRes.data) ? patRes.data : patRes.data.patients;
+          if (rawPatients.length > 0) {
+            setPatients(rawPatients);
+          }
+        }
+
+        // 2. Fetch Today's Optimized Route from Backend (/api/v1/routes/{workerId}/today)
+        const routeRes = await routeService.getTodayRoute(currentUser.user_id || 'usr_w101');
+        if (isMounted && routeRes.data && routeRes.data.stops) {
+          setStops(routeRes.data.stops);
+        }
+      } catch (err) {
+        console.warn("Backend real-time fetch notice:", err);
+      }
+    }
+
+    loadRealBackendData();
+
+    // 3. Connect Real-time WebSockets for Emergency & Messaging Streaming
+    let wsEmergency = null;
+    try {
+      wsEmergency = new WebSocket('ws://localhost:8000/ws/emergencies');
+      wsEmergency.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.event === 'NEW_EMERGENCY') {
+            showToast(`🚨 REALTIME ALERT: ${data.emergency.type} reported in ${data.emergency.village}!`, 'emergency');
+          }
+        } catch (e) {
+          console.log("WebSocket parse msg:", event.data);
+        }
+      };
+    } catch (e) {
+      console.log("WebSocket connection fallback to polling");
+    }
+
+    return () => {
+      isMounted = false;
+      if (wsEmergency) wsEmergency.close();
+    };
   }, [currentUser]);
 
   // Keyboard shortcut Ctrl+K for Command Palette

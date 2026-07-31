@@ -10,25 +10,41 @@ import {
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, Cell } from 'recharts';
 
+import { resourceService } from '../../services/api';
+
 export default function PhcResourcesPage({
   onNavigateToTab,
   onLogout
 }) {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [searchQuery, setSearchQuery] = useState('');
+  const [inventoryItems, setInventoryItems] = useState([
+    { name: 'ORS Packets', category: 'Medical Supplies', stock: 12, unit: 'Packets', minStock: 50, status: 'Low Stock', statusColor: 'bg-amber-100 text-amber-800', expiry: '--', updated: '25 May 2026' }
+  ]);
 
-  const inventoryItems = [
-    { name: 'ORS Packets', category: 'Medical Supplies', stock: 12, unit: 'Packets', minStock: 50, status: 'Low Stock', statusColor: 'bg-amber-100 text-amber-800', expiry: '--', updated: '25 May 2026' },
-    { name: 'Iron Tablets', category: 'Medicines', stock: 28, unit: 'Tablets', minStock: 100, status: 'Low Stock', statusColor: 'bg-amber-100 text-amber-800', expiry: '30 Jun 2026', updated: '25 May 2026' },
-    { name: 'Paracetamol 500mg', category: 'Medicines', stock: 15, unit: 'Strips', minStock: 50, status: 'Low Stock', statusColor: 'bg-amber-100 text-amber-800', expiry: '15 Jul 2026', updated: '25 May 2026' },
-    { name: 'Amlodipine 5mg', category: 'Medicines', stock: 35, unit: 'Tablets', minStock: 80, status: 'Low Stock', statusColor: 'bg-amber-100 text-amber-800', expiry: '10 Aug 2026', updated: '25 May 2026' },
-    { name: 'TT Vaccine', category: 'Vaccines', stock: 0, unit: 'Vials', minStock: 10, status: 'Out of Stock', statusColor: 'bg-red-100 text-red-700', expiry: '--', updated: '25 May 2026' },
-    { name: 'BP Monitor', category: 'Equipment', stock: 5, unit: 'Units', minStock: 3, status: 'Good Stock', statusColor: 'bg-emerald-100 text-emerald-800', expiry: '--', updated: '25 May 2026' },
-    { name: 'Glucometer Strips', category: 'Medical Supplies', stock: 120, unit: 'Strips', minStock: 50, status: 'Good Stock', statusColor: 'bg-emerald-100 text-emerald-800', expiry: '20 Sep 2026', updated: '25 May 2026' },
-    { name: 'Thermometer', category: 'Equipment', stock: 8, unit: 'Units', minStock: 2, status: 'Good Stock', statusColor: 'bg-emerald-100 text-emerald-800', expiry: '--', updated: '25 May 2026' },
-    { name: 'PCV Vaccine', category: 'Vaccines', stock: 25, unit: 'Vials', minStock: 20, status: 'Good Stock', statusColor: 'bg-emerald-100 text-emerald-800', expiry: '12 Sep 2026', updated: '25 May 2026' },
-    { name: 'Hand Sanitizer', category: 'Others', stock: 18, unit: 'Bottles', minStock: 10, status: 'Good Stock', statusColor: 'bg-emerald-100 text-emerald-800', expiry: '05 Oct 2026', updated: '25 May 2026' }
-  ];
+  React.useEffect(() => {
+    async function fetchRealResources() {
+      try {
+        const res = await resourceService.getResources();
+        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped = res.data.map(item => ({
+            name: item.name,
+            category: item.category,
+            stock: item.available_stock,
+            unit: item.unit,
+            minStock: item.min_stock_level,
+            status: item.status,
+            statusColor: item.status === 'Good Stock' ? 'bg-emerald-100 text-emerald-800' : item.status === 'Low Stock' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-700',
+            expiry: item.expiry_date || '--',
+            updated: item.last_updated || '25 May 2026'
+          }));
+          setInventoryItems(mapped);
+        }
+      } catch (err) {
+        console.warn("Real resource fetch notice:", err);
+      }
+    }
+  }, []);
 
   const utilizationData = [
     { name: 'ORS Packets', val: 78, color: '#6c47ff' },

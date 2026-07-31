@@ -8,6 +8,7 @@ import {
   Plus, MoreVertical, LogOut, Search, ChevronLeft, ChevronRight, Filter,
   Paperclip, Mic, Phone, Video, Info, User
 } from 'lucide-react';
+import { messageService } from '../../services/api';
 
 export default function PhcMessagingPage({
   onNavigateToTab,
@@ -94,23 +95,62 @@ export default function PhcMessagingPage({
     ]
   });
 
+  React.useEffect(() => {
+    async function fetchRealMessages() {
+      try {
+        const res = await messageService.getMessages();
+        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+          const apiMsgs = res.data.map(m => ({
+            sender: m.sender_name,
+            text: m.text,
+            time: m.timestamp,
+            isMe: m.is_me
+          }));
+          setMessages(prev => ({
+            ...prev,
+            c1: [...(prev.c1 || []), ...apiMsgs]
+          }));
+        }
+      } catch (err) {
+        console.warn("Real messages fetch notice:", err);
+      }
+    }
+    fetchRealMessages();
+  }, []);
+
   const activeChat = messages[selectedContactId] || [
     { sender: selectedContact.name, text: selectedContact.lastMsg, time: selectedContact.time, isMe: false }
   ];
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputText.trim()) return;
+
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newMsg = {
       sender: 'Dr. Ramesh Kumar',
       text: inputText,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: timeStr,
       isMe: true
     };
+
     setMessages(prev => ({
       ...prev,
       [selectedContactId]: [...(prev[selectedContactId] || []), newMsg]
     }));
+
+    // Post to live FastAPI backend
+    try {
+      await messageService.sendMessage({
+        sender_id: 'usr_sup01',
+        sender_name: 'Dr. Ramesh Kumar',
+        receiver_id: selectedContactId,
+        text: inputText
+      });
+    } catch (err) {
+      console.warn("Backend message send notice:", err);
+    }
+
     setInputText('');
   };
 
