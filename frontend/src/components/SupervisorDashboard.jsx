@@ -11,6 +11,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 
 import RouteMap from './RouteMap';
 import { MOCK_ROUTE_STOPS } from '../services/mockData';
 import AshaWorkerManagementPage from './pages/AshaWorkerManagementPage';
+import PhcPatientsPage from './pages/PhcPatientsPage';
 
 export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -114,6 +115,15 @@ export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   if (activeTab === 'workers') {
     return (
       <AshaWorkerManagementPage
+        onNavigateToTab={(tab) => setActiveTab(tab)}
+        onLogout={onLogout}
+      />
+    );
+  }
+
+  if (activeTab === 'patients') {
+    return (
+      <PhcPatientsPage
         onNavigateToTab={(tab) => setActiveTab(tab)}
         onLogout={onLogout}
       />
