@@ -10,6 +10,7 @@ import TrainingPage from './components/pages/TrainingPage';
 import ResourcesPage from './components/pages/ResourcesPage';
 import SettingsPage from './components/pages/SettingsPage';
 import AnalyticsPage from './components/pages/AnalyticsPage';
+import PatientRiskDetailPage from './components/pages/PatientRiskDetailPage';
 
 import EmergencyModal from './components/EmergencyModal';
 import AIExplanationModal from './components/AIExplanationModal';
@@ -49,6 +50,7 @@ export default function App() {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [selectedPatientDetail, setSelectedPatientDetail] = useState(null);
+  const [selectedPatientForRiskDetail, setSelectedPatientForRiskDetail] = useState(null);
 
   const [notification, setNotification] = useState(null);
 
@@ -199,8 +201,8 @@ export default function App() {
 
   const openRightDrawer = (patientId) => {
     const p = patients.find(pat => pat.patient_id === patientId) || patients[0];
-    setDrawerPatient(p);
-    setIsDrawerOpen(true);
+    setSelectedPatientForRiskDetail(p);
+    setActiveTab('patient_detail');
   };
 
   if (!currentUser) {
@@ -315,6 +317,14 @@ export default function App() {
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
+            />
+          ) : activeTab === 'patient_detail' ? (
+            <PatientRiskDetailPage
+              patient={selectedPatientForRiskDetail}
+              currentUser={currentUser}
+              onBack={() => setActiveTab('dashboard')}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
+              onTriggerEmergency={() => setActiveTab('emergency')}
             />
           ) : (
             <AshaCompanionDashboard
