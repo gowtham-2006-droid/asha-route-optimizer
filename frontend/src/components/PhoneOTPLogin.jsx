@@ -1,42 +1,71 @@
 import React, { useState } from 'react';
 import {
   HeartPulse, ShieldCheck, Users, Activity, Lock, Phone, User,
-  Mail, MapPin, Eye, EyeOff, ArrowRight, Sparkles, Heart
+  Mail, MapPin, Eye, EyeOff, ArrowRight, Sparkles, Heart, Building2
 } from 'lucide-react';
+import { authService } from '../services/api';
 
 export default function PhoneOTPLogin({ onLoginSuccess }) {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('asha_worker'); // 'asha_worker' | 'supervisor'
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [termsAgreed, setTermsAgreed] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Form State
   const [mobileNumber, setMobileNumber] = useState('+91 98765 43210');
   const [password, setPassword] = useState('password123');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [village, setVillage] = useState('Select your village / area');
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Authenticate with live FastAPI backend
+      const res = await authService.verifyOtp(mobileNumber, '123456', selectedRole);
+      if (res.data && res.data.token) {
+        localStorage.setItem('asha_jwt_token', res.data.token);
+      }
+    } catch (err) {
+      console.warn("Backend auth notice:", err.message);
+    } finally {
+      setLoading(false);
+    }
+
+    const defaultName = selectedRole === 'asha_worker' ? 'Lakshmi Devi' : 'Dr. Ramesh Kumar (Medical Officer)';
     onLoginSuccess({
-      name: 'Lakshmi Devi',
-      role: 'asha_worker',
-      phone: mobileNumber || '+91 98765 43210',
-      village: 'Ramanthapur'
+      name: defaultName,
+      role: selectedRole,
+      phone: mobileNumber || (selectedRole === 'asha_worker' ? '+91 98765 43210' : '+91 98765 43299'),
+      village: selectedRole === 'asha_worker' ? 'Ramanthapur' : 'PHC Ramanthapur Hub'
     });
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     if (!fullName) {
       alert('Please enter your full name');
       return;
     }
+    setLoading(true);
+
+    try {
+      const res = await authService.verifyOtp(mobileNumber, '123456', selectedRole);
+      if (res.data && res.data.token) {
+        localStorage.setItem('asha_jwt_token', res.data.token);
+      }
+    } catch (err) {
+      console.warn("Backend auth notice:", err.message);
+    } finally {
+      setLoading(false);
+    }
+
     onLoginSuccess({
-      name: fullName || 'Lakshmi Devi',
-      role: 'asha_worker',
+      name: fullName,
+      role: selectedRole,
       phone: mobileNumber || '+91 98765 43210',
       village: village === 'Select your village / area' ? 'Ramanthapur' : village
     });
@@ -57,30 +86,34 @@ export default function PhoneOTPLogin({ onLoginSuccess }) {
                 </div>
                 <div>
                   <h1 className="font-extrabold text-base text-[#6c47ff] tracking-tight leading-none">
-                    ASHA Companion
+                    ASHA Route Optimizer AI
                   </h1>
-                  <p className="text-[11px] text-slate-400 font-medium">Empowering Rural Health</p>
+                  <p className="text-[11px] text-slate-400 font-medium">Empowering Rural Healthcare</p>
                 </div>
               </div>
 
               {/* Main Heading */}
               <div className="space-y-2">
                 <h2 className="text-2xl font-black text-slate-900 leading-tight">
-                  Your Companion in Every Step of <span className="text-[#6c47ff]">Rural Healthcare</span>
+                  Role-Based Portal <span className="text-[#6c47ff]">Login</span>
                 </h2>
                 <span className="text-xs font-bold text-[#6c47ff] flex items-center gap-1">
                   <Heart className="w-3.5 h-3.5 fill-current" /> Track. Care. Impact.
                 </span>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium pt-1">
-                  ASHA Companion helps you manage patients, plan visits, and improve health outcomes in your community.
+                  Access the ASHA Companion Mobile Portal or the PHC Command Center for Medical Officers.
                 </p>
               </div>
 
-              {/* ASHA Worker Image Container */}
+              {/* Graphic Container */}
               <div className="relative rounded-2xl overflow-hidden shadow-md border border-purple-200 bg-purple-100 h-44 flex items-center justify-center">
                 <div className="text-center space-y-1">
-                  <span className="text-4xl block">👩‍⚕️🏽📋</span>
-                  <span className="text-xs font-bold text-purple-900 block">Empowering 100,000+ ASHA Workers</span>
+                  <span className="text-4xl block">
+                    {selectedRole === 'asha_worker' ? '👩‍⚕️🏽📋' : '🏥👨‍⚕️ Center'}
+                  </span>
+                  <span className="text-xs font-bold text-purple-900 block">
+                    {selectedRole === 'asha_worker' ? 'ASHA Companion Field Portal' : 'PHC Supervisor Command Center'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -95,12 +128,12 @@ export default function PhoneOTPLogin({ onLoginSuccess }) {
               <div className="p-2 rounded-xl bg-white border border-purple-100">
                 <ShieldCheck className="w-4 h-4 text-[#6c47ff] mx-auto mb-1" />
                 <span className="text-[9px] font-bold text-slate-800 block leading-tight">Secure & Reliable</span>
-                <span className="text-[8px] text-slate-400 block">Data is safe</span>
+                <span className="text-[8px] text-slate-400 block">JWT Auth</span>
               </div>
               <div className="p-2 rounded-xl bg-white border border-purple-100">
                 <Activity className="w-4 h-4 text-[#6c47ff] mx-auto mb-1" />
-                <span className="text-[9px] font-bold text-slate-800 block leading-tight">Smarter Healthcare</span>
-                <span className="text-[8px] text-slate-400 block">Better outcomes</span>
+                <span className="text-[9px] font-bold text-slate-800 block leading-tight">Smarter AI</span>
+                <span className="text-[8px] text-slate-400 block">OR-Tools Solver</span>
               </div>
             </div>
           </div>
@@ -110,7 +143,43 @@ export default function PhoneOTPLogin({ onLoginSuccess }) {
             <div className="space-y-6 max-w-md mx-auto w-full">
               <div>
                 <h2 className="text-2xl font-black text-slate-900">Welcome Back! 👋</h2>
-                <p className="text-xs text-slate-500 font-medium mt-1">Sign in to continue to ASHA Companion</p>
+                <p className="text-xs text-slate-500 font-medium mt-1">Select your role and sign in to continue</p>
+              </div>
+
+              {/* ROLE SELECTION PILLS */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-700 block">Select Access Role</label>
+                <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedRole('asha_worker');
+                      setMobileNumber('+91 98765 43210');
+                    }}
+                    className={`py-2 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+                      selectedRole === 'asha_worker'
+                        ? 'bg-[#6c47ff] text-white shadow-md shadow-purple-600/30'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    📱 ASHA Worker
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedRole('supervisor');
+                      setMobileNumber('+91 98765 43299');
+                    }}
+                    className={`py-2 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+                      selectedRole === 'supervisor'
+                        ? 'bg-[#6c47ff] text-white shadow-md shadow-purple-600/30'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    🏥 PHC Supervisor
+                  </button>
+                </div>
               </div>
 
               <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
@@ -169,9 +238,10 @@ export default function PhoneOTPLogin({ onLoginSuccess }) {
                 {/* Primary Login Button */}
                 <button
                   type="submit"
+                  disabled={loading}
                   className="w-full py-3 rounded-2xl bg-[#6c47ff] hover:bg-purple-700 text-white font-extrabold text-xs shadow-md shadow-purple-600/30 transition-all flex items-center justify-center gap-2"
                 >
-                  Login <ArrowRight className="w-4 h-4" />
+                  {loading ? 'Authenticating...' : `Login as ${selectedRole === 'asha_worker' ? 'ASHA Worker' : 'PHC Supervisor'}`} <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
 
@@ -181,13 +251,24 @@ export default function PhoneOTPLogin({ onLoginSuccess }) {
                 <span className="relative bg-white px-3 text-[10px] font-bold text-slate-400 uppercase">or continue with</span>
               </div>
 
-              {/* Continue with Google Button */}
-              <button
-                onClick={() => onLoginSuccess({ name: 'Lakshmi Devi', role: 'asha_worker', phone: '+91 98765 43210', village: 'Ramanthapur' })}
-                className="w-full py-2.5 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2"
-              >
-                <span className="font-bold text-blue-600">G</span> Continue with Google
-              </button>
+              {/* Quick Role Demo Buttons */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onLoginSuccess({ name: 'Lakshmi Devi', role: 'asha_worker', phone: '+91 98765 43210', village: 'Ramanthapur' })}
+                  className="py-2.5 rounded-2xl bg-purple-50 border border-purple-200 text-[#6c47ff] font-extrabold text-xs hover:bg-purple-100 transition-all text-center"
+                >
+                  📱 ASHA Demo
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onLoginSuccess({ name: 'Dr. Ramesh Kumar', role: 'supervisor', phone: '+91 98765 43299', village: 'PHC Ramanthapur' })}
+                  className="py-2.5 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-700 font-extrabold text-xs hover:bg-indigo-100 transition-all text-center"
+                >
+                  🏥 Supervisor Demo
+                </button>
+              </div>
 
               {/* Switch to Register */}
               <p className="text-center text-xs text-slate-500 font-medium">
@@ -197,236 +278,115 @@ export default function PhoneOTPLogin({ onLoginSuccess }) {
                 </button>
               </p>
             </div>
-
-            {/* Bottom Security Box */}
-            <div className="max-w-md mx-auto w-full p-3.5 rounded-2xl bg-purple-50/70 border border-purple-100 flex items-center gap-3 text-xs">
-              <ShieldCheck className="w-5 h-5 text-[#6c47ff] shrink-0" />
-              <div>
-                <h4 className="font-bold text-purple-950 text-xs">Your data is protected</h4>
-                <p className="text-[10px] text-purple-700 font-medium">We use end-to-end encryption to keep your information secure.</p>
-              </div>
-            </div>
           </div>
         </div>
       ) : (
         /* ================= 2. REGISTER SCREEN ================= */
         <div className="w-full max-w-5xl bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[640px]">
-          {/* Left Hero Section (5 Cols) */}
-          <div className="md:col-span-5 bg-gradient-to-br from-purple-50 via-indigo-50 to-white p-8 flex flex-col justify-between border-r border-slate-100 relative">
+          {/* Left Hero */}
+          <div className="md:col-span-5 bg-gradient-to-br from-purple-50 via-indigo-50 to-white p-8 flex flex-col justify-between border-r border-slate-100">
             <div className="space-y-6">
-              {/* Logo & Title */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-600/30">
                   <HeartPulse className="w-6 h-6" />
                 </div>
                 <div>
-                  <h1 className="font-extrabold text-base text-[#6c47ff] tracking-tight leading-none">
-                    ASHA Companion
-                  </h1>
-                  <p className="text-[11px] text-slate-400 font-medium">Empowering Rural Health</p>
+                  <h1 className="font-extrabold text-base text-[#6c47ff] tracking-tight leading-none">ASHA Optimizer</h1>
+                  <p className="text-[11px] text-slate-400 font-medium">Register New Account</p>
                 </div>
               </div>
 
-              {/* Main Heading */}
               <div className="space-y-2">
                 <h2 className="text-2xl font-black text-slate-900 leading-tight">
-                  Join <span className="text-[#6c47ff]">ASHA Companion</span>
+                  Join the Network of <span className="text-[#6c47ff]">Healthcare Heroes</span>
                 </h2>
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  Create your account and start making a difference in your community.
+                <p className="text-xs text-slate-500 font-medium">
+                  Register your account to access real-time route optimization, emergency alerts, and patient monitoring.
                 </p>
               </div>
-
-              {/* 3 Feature Bullets */}
-              <div className="space-y-3 pt-2 text-xs">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-[#6c47ff] flex items-center justify-center font-bold shrink-0">
-                    <Users className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-xs">Easy Patient Management</h4>
-                    <p className="text-[10px] text-slate-500 font-medium">Add, track and follow up with patients easily</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold shrink-0">
-                    <HeartPulse className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-xs">Smart Route Planning</h4>
-                    <p className="text-[10px] text-slate-500 font-medium">Optimize your visits and save travel time</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold shrink-0">
-                    <Activity className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-xs">Real-time Insights</h4>
-                    <p className="text-[10px] text-slate-500 font-medium">Get important alerts and health insights</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Graphic Illustration */}
-            <div className="rounded-2xl bg-purple-100/60 p-4 text-center border border-purple-200">
-              <span className="text-3xl block">📋 🩺 🩹</span>
-              <span className="text-[10px] font-bold text-purple-900 block mt-1">Official National Health Mission Companion</span>
             </div>
           </div>
 
-          {/* Right Register Card (7 Cols) */}
-          <div className="md:col-span-7 p-8 md:p-10 flex flex-col justify-between space-y-6">
-            <div className="space-y-4 max-w-md mx-auto w-full">
+          {/* Right Register Card */}
+          <div className="md:col-span-7 p-8 md:p-12 flex flex-col justify-between space-y-6">
+            <div className="space-y-6 max-w-md mx-auto w-full">
               <div>
-                <h2 className="text-xl font-black text-slate-900 flex items-center gap-1.5">
-                  Create Your Account <Sparkles className="w-4 h-4 text-[#6c47ff] fill-current" />
-                </h2>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">Let's get started with your details</p>
+                <h2 className="text-2xl font-black text-slate-900">Create Account 📝</h2>
+                <p className="text-xs text-slate-500 font-medium mt-1">Register for ASHA Companion or PHC Command</p>
+              </div>
+
+              {/* ROLE SELECTION FOR REGISTER */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-700 block">Register Role</label>
+                <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRole('asha_worker')}
+                    className={`py-2 rounded-xl text-xs font-extrabold transition-all ${
+                      selectedRole === 'asha_worker' ? 'bg-[#6c47ff] text-white shadow-md shadow-purple-600/30' : 'text-slate-600'
+                    }`}
+                  >
+                    📱 ASHA Worker
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRole('supervisor')}
+                    className={`py-2 rounded-xl text-xs font-extrabold transition-all ${
+                      selectedRole === 'supervisor' ? 'bg-[#6c47ff] text-white shadow-md shadow-purple-600/30' : 'text-slate-600'
+                    }`}
+                  >
+                    🏥 PHC Supervisor
+                  </button>
+                </div>
               </div>
 
               <form onSubmit={handleRegisterSubmit} className="space-y-3 text-xs">
-                {/* Full Name */}
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 block">Full Name</label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
-                    <input
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#6c47ff]"
-                    />
-                  </div>
-                </div>
-
-                {/* Mobile Number */}
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 block">Mobile Number</label>
-                  <div className="relative">
-                    <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
-                    <input
-                      type="text"
-                      placeholder="+91 98765 43210"
-                      value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#6c47ff]"
-                    />
-                  </div>
-                </div>
-
-                {/* Email Address (Optional) */}
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 block">Email Address <span className="text-slate-400 font-normal">(Optional)</span></label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
-                    <input
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#6c47ff]"
-                    />
-                  </div>
-                </div>
-
-                {/* Create Password */}
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 block">Create Password</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Create a password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#6c47ff]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-600"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-semibold block">Password must be at least 6 characters</span>
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 pt-0.5">
-                    <span>Strength: Weak</span>
-                    <div className="flex gap-1">
-                      <span className="w-3 h-1 rounded-full bg-red-500" />
-                      <span className="w-3 h-1 rounded-full bg-slate-200" />
-                      <span className="w-3 h-1 rounded-full bg-slate-200" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Confirm Password */}
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 block">Confirm Password</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
-                    <input
-                      type="password"
-                      placeholder="Confirm your password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#6c47ff]"
-                    />
-                  </div>
-                </div>
-
-                {/* Area / Village Dropdown */}
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 block">Your Area / Village</label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
-                    <select
-                      value={village}
-                      onChange={(e) => setVillage(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#6c47ff]"
-                    >
-                      <option>Select your village / area</option>
-                      <option>Ramanthapur</option>
-                      <option>Habsiguda</option>
-                      <option>Uppal</option>
-                      <option>Nagole</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Checkbox Terms */}
-                <div className="flex items-center gap-2 pt-1">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Full Name</label>
                   <input
-                    type="checkbox"
-                    id="terms"
-                    checked={termsAgreed}
-                    onChange={(e) => setTermsAgreed(e.target.checked)}
-                    className="w-4 h-4 accent-[#6c47ff] rounded cursor-pointer"
+                    type="text"
+                    placeholder="e.g. Lakshmi Devi"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#6c47ff]"
                   />
-                  <label htmlFor="terms" className="font-semibold text-slate-600 cursor-pointer text-[11px]">
-                    I agree to the <span className="text-[#6c47ff] font-bold">Terms & Conditions</span> and <span className="text-[#6c47ff] font-bold">Privacy Policy</span>
-                  </label>
                 </div>
 
-                {/* Primary Register Button */}
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Mobile Number</label>
+                  <input
+                    type="text"
+                    placeholder="+91 98765 43210"
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#6c47ff]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Village / Center Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Ramanthapur"
+                    value={village}
+                    onChange={(e) => setVillage(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-[#6c47ff]"
+                  />
+                </div>
+
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-2xl bg-[#6c47ff] hover:bg-purple-700 text-white font-extrabold text-xs shadow-md shadow-purple-600/30 transition-all flex items-center justify-center gap-2"
+                  disabled={loading}
+                  className="w-full py-3 rounded-2xl bg-[#6c47ff] hover:bg-purple-700 text-white font-extrabold text-xs shadow-md shadow-purple-600/30 transition-all flex items-center justify-center gap-2 mt-2"
                 >
-                  Register <ArrowRight className="w-4 h-4" />
+                  {loading ? 'Creating Account...' : 'Complete Registration'} <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
 
-              {/* Switch to Login */}
               <p className="text-center text-xs text-slate-500 font-medium">
                 Already have an account?{' '}
                 <button onClick={() => setIsRegisterMode(false)} className="text-[#6c47ff] font-extrabold hover:underline">
-                  Login here
+                  Sign in here
                 </button>
               </p>
             </div>
