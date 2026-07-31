@@ -4,14 +4,15 @@ import {
   GraduationCap, Folder, Settings, Bell, Globe, Calendar, Smartphone, Mail,
   Clock, Moon, Cloud, Wifi, Shield, Lock, ShieldCheck, Database, Download,
   HelpCircle, MessageCircle, AlertTriangle, Trash2, HeartPulse, Navigation,
-  Bot, Sparkles, ChevronRight, Edit3, Check, BarChart3, UserCheck
+  Bot, Sparkles, ChevronRight, Edit3, Check, BarChart3, UserCheck, LogOut
 } from 'lucide-react';
 
 export default function SettingsPage({
   currentUser,
   onTriggerEmergency,
   onRegisterNewPatient,
-  onNavigateToTab
+  onNavigateToTab,
+  onLogout
 }) {
   const [activeSubTab, setActiveSubTab] = useState('General');
   const [language, setLanguage] = useState('English');
@@ -81,6 +82,9 @@ export default function SettingsPage({
             </button>
             <button onClick={() => onNavigateToTab('settings')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-[#6c47ff] text-white font-bold shadow-md shadow-purple-600/25 transition-all">
               <Settings className="w-4 h-4" /><span>Settings</span>
+            </button>
+            <button onClick={onLogout} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-red-600 hover:bg-red-50 transition-all font-bold mt-2">
+              <LogOut className="w-4 h-4" /><span>Log Out</span>
             </button>
           </nav>
         </div>
@@ -477,6 +481,18 @@ export default function SettingsPage({
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </div>
                 </div>
+              </div>
+
+              {/* CARD 5: Account & Log Out */}
+              <div className="bg-red-50/50 rounded-3xl border border-red-200 p-5 shadow-xs space-y-3">
+                <h3 className="font-extrabold text-red-900 text-sm">Account & Session</h3>
+                <p className="text-xs text-slate-600">You are currently logged in as <strong className="text-slate-900">{currentUser?.name || 'Lakshmi Devi'}</strong> ({currentUser?.role || 'ASHA Worker'}).</p>
+                <button
+                  onClick={onLogout}
+                  className="w-full py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md shadow-red-600/30 transition-all"
+                >
+                  <LogOut className="w-4 h-4" /> Log Out of Account
+                </button>
               </div>
             </div>
           </div>

@@ -5,7 +5,7 @@ import {
   AlertTriangle, HeartPulse, Navigation, ArrowRight, Activity, Sparkles,
   RotateCw, RefreshCw, Sun, Coffee, Flag, ArrowUpDown, ChevronUp,
   BarChart3, UserCheck, Check, Calendar, CloudRain, ShieldCheck, Fuel,
-  Compass, Zap, ArrowLeft, MoreVertical, Eye, Map, CheckCheck
+  Compass, Zap, ArrowLeft, MoreVertical, Eye, Map, CheckCheck, LogOut
 } from 'lucide-react';
 import RouteMap from '../RouteMap';
 
@@ -17,7 +17,8 @@ export default function MyRoutePage({
   onExplainRisk,
   onTriggerEmergency,
   onRegisterNewPatient,
-  onNavigateToTab
+  onNavigateToTab,
+  onLogout
 }) {
   const [selectedTab, setSelectedTab] = useState('all');
 
@@ -139,8 +140,11 @@ export default function MyRoutePage({
             <button onClick={() => onNavigateToTab('resources')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
               <Folder className="w-4 h-4" /><span>Resources</span>
             </button>
-            <button onClick={() => onNavigateToTab('settings')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
+            <button onClick={() => onNavigateToTab('settings')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all">
               <Settings className="w-4 h-4" /><span>Settings</span>
+            </button>
+            <button onClick={onLogout} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-red-600 hover:bg-red-50 font-bold transition-all mt-2">
+              <LogOut className="w-4 h-4" /><span>Log Out</span>
             </button>
           </nav>
         </div>

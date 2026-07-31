@@ -7,7 +7,7 @@ import {
   Calendar, Clock, ShieldCheck, Heart, Thermometer, Droplets, Scale,
   PhoneCall, HelpCircle, MoreVertical, BarChart3, UserCheck, Pill,
   CheckSquare, Square, FileSpreadsheet, Lock, Phone, User, Stethoscope,
-  X
+  X, LogOut
 } from 'lucide-react';
 
 export default function PatientVisitPage({
@@ -15,7 +15,8 @@ export default function PatientVisitPage({
   currentUser,
   onBack,
   onNavigateToTab,
-  onTriggerEmergency
+  onTriggerEmergency,
+  onLogout
 }) {
   // Visit Timer State (Counts up from 17 mins 32 secs)
   const [seconds, setSeconds] = useState(1052);
@@ -159,6 +160,9 @@ export default function PatientVisitPage({
             </button>
             <button onClick={() => onNavigateToTab('settings')} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all">
               <Settings className="w-4 h-4" /><span>Settings</span>
+            </button>
+            <button onClick={onLogout} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-red-600 hover:bg-red-50 font-bold transition-all mt-2">
+              <LogOut className="w-4 h-4" /><span>Log Out</span>
             </button>
           </nav>
         </div>

@@ -85,6 +85,12 @@ export default function App() {
     showToast(`Welcome ${userProfile.name}! Entered ${userProfile.role === 'asha_worker' ? 'ASHA Companion Portal' : 'PHC Supervisor Command Center'}.`, 'success');
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('asha_user_profile');
+    setCurrentUser(null);
+    showToast('Logged out successfully. Returned to login portal.', 'info');
+  };
+
   const handleStatusChange = (stopId, newStatus) => {
     setStops(prev => prev.map(s => s.stop_id === stopId ? { ...s, status: newStatus } : s));
     showToast(`Visit status updated to ${newStatus.toUpperCase()}`, 'success');
@@ -239,6 +245,7 @@ export default function App() {
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'patients' ? (
             <PatientsPage
@@ -250,6 +257,7 @@ export default function App() {
               onBatchImport={handleBatchImport}
               onTriggerEmergency={() => setActiveTab('emergency')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'add_patient' ? (
             <AddPatientPage
@@ -257,6 +265,7 @@ export default function App() {
               onRegisterNewPatient={handleRegisterNewPatient}
               onTriggerEmergency={() => setActiveTab('emergency')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'emergency' ? (
             /* EMERGENCY DISPATCH PAGE (Exact Replica of User Mockup) */
@@ -264,6 +273,7 @@ export default function App() {
               currentUser={currentUser}
               onTriggerEmergency={() => setActiveTab('emergency')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'reports' ? (
             <ReportsPage
@@ -271,6 +281,7 @@ export default function App() {
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'messages' ? (
             <MessagesPage
@@ -278,6 +289,7 @@ export default function App() {
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'training' ? (
             <TrainingPage
@@ -285,6 +297,7 @@ export default function App() {
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'resources' ? (
             <ResourcesPage
@@ -292,6 +305,7 @@ export default function App() {
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'settings' ? (
             <SettingsPage
@@ -299,6 +313,7 @@ export default function App() {
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'analytics' ? (
             <AnalyticsPage
@@ -306,6 +321,7 @@ export default function App() {
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'next_patient' || activeTab === 'patient_visit' ? (
             <PatientVisitPage
@@ -313,6 +329,7 @@ export default function App() {
               onBack={() => setActiveTab('dashboard')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setActiveTab('emergency')}
+              onLogout={handleLogout}
             />
           ) : activeTab === 'patient_detail' ? (
             <PatientRiskDetailPage
@@ -321,6 +338,7 @@ export default function App() {
               onBack={() => setActiveTab('dashboard')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
               onTriggerEmergency={() => setActiveTab('emergency')}
+              onLogout={handleLogout}
             />
           ) : (
             <AshaCompanionDashboard
@@ -332,6 +350,7 @@ export default function App() {
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
+              onLogout={handleLogout}
             />
           )
         ) : (
@@ -401,6 +420,7 @@ export default function App() {
           <CommandGroup heading="Actions">
             <CommandItem onSelect={() => { setActiveTab('emergency'); setIsCommandOpen(false); }}>🚨 Emergency Trigger</CommandItem>
             <CommandItem onSelect={() => { setActiveTab('add_patient'); setIsCommandOpen(false); }}>Register New Patient</CommandItem>
+            <CommandItem onSelect={() => { handleLogout(); setIsCommandOpen(false); }}>🚪 Log Out</CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>

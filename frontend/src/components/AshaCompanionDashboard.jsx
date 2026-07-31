@@ -3,7 +3,7 @@ import {
   Home, MapPin, Users, Plus, AlertOctagon, FileText, MessageSquare,
   GraduationCap, Folder, Settings, Bell, Clock, ChevronRight, CheckCircle2,
   AlertTriangle, HeartPulse, Navigation, ArrowRight, Activity, Sparkles, UserCheck,
-  BarChart3
+  BarChart3, LogOut
 } from 'lucide-react';
 import RouteMap from './RouteMap';
 
@@ -16,6 +16,7 @@ export default function AshaCompanionDashboard({
   onTriggerEmergency,
   onRegisterNewPatient,
   onNavigateToTab,
+  onLogout,
   activeTab = 'dashboard'
 }) {
   const completedCount = stops.filter(s => s.status === 'visited').length;
@@ -190,6 +191,14 @@ export default function AshaCompanionDashboard({
               <Settings className="w-4 h-4" />
               <span>Settings</span>
             </button>
+
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-red-600 hover:bg-red-50 transition-all font-bold mt-2"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Log Out</span>
+            </button>
           </nav>
         </div>
 
@@ -239,6 +248,14 @@ export default function AshaCompanionDashboard({
                 <span className="font-bold text-slate-900 block leading-tight">{currentUser?.name || 'Lakshmi Devi'}</span>
                 <span className="text-[10px] text-slate-500 font-semibold">ASHA Worker</span>
               </div>
+              <button
+                onClick={onLogout}
+                title="Log Out"
+                className="ml-1 p-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs flex items-center gap-1.5 transition-all border border-red-200/60"
+              >
+                <LogOut className="w-4 h-4 text-red-600" />
+                <span className="hidden md:inline">Log Out</span>
+              </button>
             </div>
           </div>
         </header>
