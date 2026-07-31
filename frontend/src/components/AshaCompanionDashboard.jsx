@@ -332,7 +332,7 @@ export default function AshaCompanionDashboard({
               <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-slate-900 text-sm">Next Visit</h3>
-                  <button onClick={() => onNavigateToTab && onNavigateToTab('route')} className="text-xs text-[#6c47ff] font-bold flex items-center gap-1 hover:underline">
+                  <button onClick={() => onNavigateToTab && onNavigateToTab('next_patient')} className="text-xs text-[#6c47ff] font-bold flex items-center gap-1 hover:underline">
                     View Patient <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>

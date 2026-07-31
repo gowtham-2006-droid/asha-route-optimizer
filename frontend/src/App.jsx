@@ -11,6 +11,7 @@ import ResourcesPage from './components/pages/ResourcesPage';
 import SettingsPage from './components/pages/SettingsPage';
 import AnalyticsPage from './components/pages/AnalyticsPage';
 import PatientRiskDetailPage from './components/pages/PatientRiskDetailPage';
+import PatientVisitPage from './components/pages/PatientVisitPage';
 
 import EmergencyModal from './components/EmergencyModal';
 import AIExplanationModal from './components/AIExplanationModal';
@@ -306,17 +307,12 @@ export default function App() {
               onTriggerEmergency={() => setActiveTab('emergency')}
               onRegisterNewPatient={() => setActiveTab('add_patient')}
             />
-          ) : activeTab === 'next_patient' ? (
-            /* Next Patient just navigates to Route page with focus on next stop */
-            <MyRoutePage
-              stops={stops}
-              workerLocation={MOCK_WORKER.current_location}
+          ) : activeTab === 'next_patient' || activeTab === 'patient_visit' ? (
+            <PatientVisitPage
               currentUser={currentUser}
-              onStatusChange={handleStatusChange}
-              onExplainRisk={(pid) => openRightDrawer(pid)}
-              onTriggerEmergency={() => setActiveTab('emergency')}
-              onRegisterNewPatient={() => setActiveTab('add_patient')}
+              onBack={() => setActiveTab('dashboard')}
               onNavigateToTab={(tab) => setActiveTab(tab)}
+              onTriggerEmergency={() => setActiveTab('emergency')}
             />
           ) : activeTab === 'patient_detail' ? (
             <PatientRiskDetailPage
