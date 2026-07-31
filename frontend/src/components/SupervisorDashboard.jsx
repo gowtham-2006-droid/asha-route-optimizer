@@ -19,6 +19,7 @@ import PhcReportsPage from './pages/PhcReportsPage';
 import PhcResourcesPage from './pages/PhcResourcesPage';
 import PhcMessagingPage from './pages/PhcMessagingPage';
 import PhcSettingsPage from './pages/PhcSettingsPage';
+import PhcAnalyticsPage from './pages/PhcAnalyticsPage';
 
 export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -176,6 +177,15 @@ export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   if (activeTab === 'resources') {
     return (
       <PhcResourcesPage
+        onNavigateToTab={(tab) => setActiveTab(tab)}
+        onLogout={onLogout}
+      />
+    );
+  }
+
+  if (activeTab === 'analytics') {
+    return (
+      <PhcAnalyticsPage
         onNavigateToTab={(tab) => setActiveTab(tab)}
         onLogout={onLogout}
       />
