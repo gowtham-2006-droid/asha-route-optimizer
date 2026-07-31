@@ -10,6 +10,7 @@ import {
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
 import RouteMap from './RouteMap';
 import { MOCK_ROUTE_STOPS } from '../services/mockData';
+import AshaWorkerManagementPage from './pages/AshaWorkerManagementPage';
 
 export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -109,6 +110,15 @@ export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
     { name: 'Respiratory', count: 28, color: '#3b82f6' },
     { name: 'Others', count: 18, color: '#10b981' }
   ];
+
+  if (activeTab === 'workers') {
+    return (
+      <AshaWorkerManagementPage
+        onNavigateToTab={(tab) => setActiveTab(tab)}
+        onLogout={onLogout}
+      />
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[#f8f9fe] text-slate-900 font-sans">
