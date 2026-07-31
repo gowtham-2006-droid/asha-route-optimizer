@@ -12,6 +12,7 @@ import RouteMap from './RouteMap';
 import { MOCK_ROUTE_STOPS } from '../services/mockData';
 import AshaWorkerManagementPage from './pages/AshaWorkerManagementPage';
 import PhcPatientsPage from './pages/PhcPatientsPage';
+import VillagesPage from './pages/VillagesPage';
 
 export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -124,6 +125,15 @@ export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   if (activeTab === 'patients') {
     return (
       <PhcPatientsPage
+        onNavigateToTab={(tab) => setActiveTab(tab)}
+        onLogout={onLogout}
+      />
+    );
+  }
+
+  if (activeTab === 'villages') {
+    return (
+      <VillagesPage
         onNavigateToTab={(tab) => setActiveTab(tab)}
         onLogout={onLogout}
       />
