@@ -17,6 +17,8 @@ import LiveRoutesPage from './pages/LiveRoutesPage';
 import PhcEmergenciesPage from './pages/PhcEmergenciesPage';
 import PhcReportsPage from './pages/PhcReportsPage';
 import PhcResourcesPage from './pages/PhcResourcesPage';
+import PhcMessagingPage from './pages/PhcMessagingPage';
+import PhcSettingsPage from './pages/PhcSettingsPage';
 
 export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -174,6 +176,24 @@ export default function SupervisorDashboard({ onGenerateReport, onLogout }) {
   if (activeTab === 'resources') {
     return (
       <PhcResourcesPage
+        onNavigateToTab={(tab) => setActiveTab(tab)}
+        onLogout={onLogout}
+      />
+    );
+  }
+
+  if (activeTab === 'messaging') {
+    return (
+      <PhcMessagingPage
+        onNavigateToTab={(tab) => setActiveTab(tab)}
+        onLogout={onLogout}
+      />
+    );
+  }
+
+  if (activeTab === 'settings') {
+    return (
+      <PhcSettingsPage
         onNavigateToTab={(tab) => setActiveTab(tab)}
         onLogout={onLogout}
       />
